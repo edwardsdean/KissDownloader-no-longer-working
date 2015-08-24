@@ -5,6 +5,8 @@ from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.keys import Keys
 import time
 #stuff that I might do... eventually
+#TODO error management
+#TODO standalone package
 #TODO confirm a successful login
 #TODO add support for kisscartoon.com
 #TODO fancy logging
