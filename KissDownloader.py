@@ -110,8 +110,8 @@ class Downloader():
             print("downloading " + filename)
             self.download_video(video, filename, p[7])  # 7 is the destination
             print("downloaded " + filename)
-            print("done downloading " + p[2] + " Season " + p[4])
-            self.close()
+        print("done downloading " + p[2] + " Season " + p[4])
+        self.close()
 
 
 def get_params():
