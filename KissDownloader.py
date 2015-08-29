@@ -7,7 +7,7 @@ import time
 import configparser
 
 
-# stuff that I might do... eventually
+# stuff that I may do... eventually
 # TODO error management
 # TODO standalone package
 # TODO confirm a successful login
