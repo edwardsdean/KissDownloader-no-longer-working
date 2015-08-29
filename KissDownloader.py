@@ -34,9 +34,8 @@ class Downloader():
         self.driver.set_page_load_timeout(100)
 
     def login(self, user, pw):
-        self.driver.get("http://kissanime.com/Login") \
- \
-            # wait for cloudflare to figure itself out
+        self.driver.get("http://kissanime.com/Login")
+        # wait for cloudflare to figure itself out
         time.sleep(10)
 
         # locate username and password fields in the login page
@@ -50,6 +49,19 @@ class Downloader():
         # send the filled out login form
         password.send_keys(Keys.RETURN)
         time.sleep(5)
+
+        #confirm that login was successful and return a bool
+        if self.driver.current_url == "http://kissanime.com/":
+            return True
+        else:
+            #clear failed login info from config
+            config = configparser.ConfigParser()
+            config.read("config.ini")
+            del config["Login"]["username"]
+            del config["Login"]["password"]
+            with open("example.ini", "w") as configfile:
+                config.write(configfile)
+            return False
 
     def get_episode_page(self, episode):
         # parses the streaming page of an episode from the root page
@@ -99,7 +111,11 @@ class Downloader():
 
     def download(self, p):
         # uses all the other functions to do the downloads
-        self.login(p[0], p[1])  # 0 are the indices of the username and password from get_params()
+        l = self.login(p[0], p[1])  # 0 are the indices of the username and password from get_params()
+        while not l:
+            print("login failed, try again")
+            p = get_params()
+            l = self.login(p[0], p[1])
         self.driver.get(p[3])  # 3 is the index of the url
         time.sleep(10)
         self.rootPage = self.driver.page_source
@@ -112,7 +128,6 @@ class Downloader():
             print("downloaded " + filename)
         print("done downloading " + p[2] + " Season " + p[4])
         self.close()
-
 
 def get_params():
     # create a configparser instance and open config.ini
