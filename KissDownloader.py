@@ -57,9 +57,9 @@ class Downloader():
             #clear failed login info from config
             config = configparser.ConfigParser()
             config.read("config.ini")
-            del config["Login"]["username"]
-            del config["Login"]["password"]
-            with open("example.ini", "w") as configfile:
+            config["Login"]["username"] = ""
+            config["Login"]["password"] = ""
+            with open("config.ini", "w") as configfile:
                 config.write(configfile)
             return False
 
