@@ -27,14 +27,18 @@ import configparser
 # TODO pause downloads
 # TODO get video src through video player to avoid the need to login and handle user data
 # TODO support for queueing downloads, will be easy once configs/console launching is supported
-class Downloader():
+class Downloader:
     def __init__(self):
         # create a webdriver instance with a lenient timeout duration
         self.driver = webdriver.Firefox()
         self.driver.set_page_load_timeout(100)
+        self.rootPage = ""
 
     def login(self, user, pw):
+        global config
+        # go to the site login page
         self.driver.get("http://kissanime.com/Login")
+
         # wait for cloudflare to figure itself out
         time.sleep(10)
 
@@ -46,21 +50,23 @@ class Downloader():
         username.send_keys(user)
         password.send_keys(pw)
 
-        # send the filled out login form
+        # send the filled out login form and wait
         password.send_keys(Keys.RETURN)
         time.sleep(5)
 
-        #confirm that login was successful and return a bool
+        # confirm that login was successful and return a bool
         if self.driver.current_url == "http://kissanime.com/":
             return True
         else:
-            #clear failed login info from config
+            # clear failed login info from config
             config = configparser.ConfigParser()
             config.read("config.ini")
             config["Login"]["username"] = ""
             config["Login"]["password"] = ""
+
             with open("config.ini", "w") as configfile:
                 config.write(configfile)
+
             return False
 
     def get_episode_page(self, episode):
@@ -68,7 +74,7 @@ class Downloader():
         soup = BeautifulSoup(self.rootPage, 'html.parser')
         for link in soup.findAll('a'):
             currentlink = link.get('href')
-            if currentlink == None:
+            if currentlink is None:
                 pass
             elif "/Episode-" + str(episode).zfill(3) in currentlink:
                 return "http://kissanime.com" + currentlink
@@ -77,26 +83,32 @@ class Downloader():
         # parses the video source link from the streaming page, currently chooses the highest available quality
         print("page is " + page)
         x = True
-        while (x):
+
+        while x:
             try:
                 self.driver.get(page)
                 x = False
+            # try again if the page times out
             except TimeoutException:
-                pass
+                print("loading " + page + " timed out, trying again.")
         time.sleep(10)
-        self.currentPage = self.driver.page_source
-        soup = BeautifulSoup(self.currentPage, 'html.parser')
+
+        currentpage = self.driver.page_source
+        soup = BeautifulSoup(currentpage, 'html.parser')
+
         for link in soup.findAll('a'):
             currentlink = link.get('href')
-            if currentlink == None:
+            if currentlink is None:
                 pass
             elif "https://redirector.googlevideo.com/videoplayback?" in currentlink:
                 return currentlink
+        return False
 
-    def download_video(self, url, Name, destination):
+    @staticmethod
+    def download_video(url, name, destination):
         # downloads the episode, currently assumes it to be an mp4
-        fileName = Name + ".mp4"  # add the expected file type here
-        path = destination + fileName
+        filename = name + ".mp4"  # add the expected file type here
+        path = destination + filename
         r = requests.get(url, stream=True)
         with open(path, 'wb') as f:
             for chunk in r.iter_content(chunk_size=1024):
@@ -110,14 +122,16 @@ class Downloader():
         self.driver.close()
 
     def download(self, p):
-        # uses all the other functions to do the downloads
+        # takes a list of parameters and uses them to download the show
         l = self.login(p[0], p[1])  # 0 are the indices of the username and password from get_params()
         while not l:
             print("login failed, try again")
             p = get_params()
             l = self.login(p[0], p[1])
+
         self.driver.get(p[3])  # 3 is the index of the url
         time.sleep(10)
+
         self.rootPage = self.driver.page_source
         for e in range(p[5], p[6]):  # 5 and 6 are episodes min and max
             page = self.get_episode_page(e)
@@ -129,7 +143,9 @@ class Downloader():
         print("done downloading " + p[2] + " Season " + p[4])
         self.close()
 
+
 def get_params():
+    global config
     # create a configparser instance and open config.ini
     config = configparser.ConfigParser()
     config.read("config.ini")
@@ -137,6 +153,7 @@ def get_params():
     # check if each parameter is present in the config file
     # if not, get it from the user
     auth = config["Login"]
+
     if len(auth["username"]) != 0:
         user = auth["username"]
     else:
@@ -164,23 +181,23 @@ def get_params():
         season = input("input show season number: ")
 
     if len(show["episodeMin"]) != 0:
-        episodeMin = show["episodeMin"]
+        episode_min = show["episodeMin"]
     else:
-        episodeMin = input("input episodeMin: ")
-    episodeMin = int(episodeMin) #episode numbers are used to iterate a range, so int()
+        episode_min = input("input episodeMin: ")
+    episode_min = int(episode_min)  # episode numbers are used to iterate a range, so int()
 
     if len(show["episodeMax"]) != 0:
-        episodeMax = show["episodeMax"]
+        episode_max = show["episodeMax"]
     else:
-        episodeMax = input("input episodeMax: ")
-    episodeMax =  int(episodeMax)
+        episode_max = input("input episodeMax: ")
+    episode_max = int(episode_max)
 
     if len(show["destination"]) != 0:
         destination = show["destination"]
     else:
         destination = input("input show destination: ")
 
-    params = [user, password, title, anime, season, episodeMin, episodeMax, destination]
+    params = [user, password, title, anime, season, episode_min, episode_max, destination]
     return params
 
 
