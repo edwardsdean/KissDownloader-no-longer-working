@@ -133,7 +133,7 @@ class Downloader:
         time.sleep(10)
 
         self.rootPage = self.driver.page_source
-        for e in range(p[5], p[6]):  # 5 and 6 are episodes min and max
+        for e in range(p[5], p[6]+1):  # 5 and 6 are episodes min and max
             page = self.get_episode_page(e)
             video = self.get_video_src(page)
             filename = p[2] + " S" + str(p[4].zfill(2)) + "E" + str(e).zfill(3)  # 2 is the title, 4 is the season
