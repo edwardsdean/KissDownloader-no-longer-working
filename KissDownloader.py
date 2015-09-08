@@ -200,8 +200,9 @@ def get_params():
     params = [user, password, title, anime, season, episode_min, episode_max, destination]
     return params
 
+if __name__ == "__main__":
 
-config = get_params()
-print(config)
-DL = Downloader()
-DL.download(config)
+    config = get_params()
+    print(config)
+    DL = Downloader()
+    DL.download(config)
