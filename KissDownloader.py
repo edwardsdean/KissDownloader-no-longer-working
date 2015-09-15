@@ -27,6 +27,7 @@ import configparser
 # TODO pause downloads
 # TODO get video src through video player to avoid the need to login and handle user data
 # TODO support for queueing downloads, will be easy once configs/console launching is supported
+#TODO deal with reaching the end of a show
 class Downloader:
     def __init__(self):
         # create a webdriver instance with a lenient timeout duration
