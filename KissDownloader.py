@@ -8,6 +8,7 @@ import configparser
 
 
 # stuff that I may do... eventually
+#TODO deal with different episode formats
 # TODO error management
 # TODO standalone package
 # TODO confirm a successful login
