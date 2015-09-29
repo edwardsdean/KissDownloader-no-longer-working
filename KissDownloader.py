@@ -81,7 +81,7 @@ class Downloader:
             elif "/Episode-" + str(episode).zfill(3) in currentlink:
                 return "http://kissanime.com" + currentlink
 
-    def get_video_src(self, page):
+    def get_video_src(self, page, qual):
         # parses the video source link from the streaming page, currently chooses the highest available quality
         print("page is " + page)
         x = True
@@ -98,11 +98,12 @@ class Downloader:
         currentpage = self.driver.page_source
         soup = BeautifulSoup(currentpage, 'html.parser')
 
-        for link in soup.findAll('a'):
+        for link in soup.findAll('a', string=qual):
             currentlink = link.get('href')
             if currentlink is None:
                 pass
             elif "https://redirector.googlevideo.com/videoplayback?" in currentlink:
+                print(currentlink)
                 return currentlink
         return False
 
@@ -137,10 +138,10 @@ class Downloader:
         self.rootPage = self.driver.page_source
         for e in range(p[5], p[6]+1):  # 5 and 6 are episodes min and max
             page = self.get_episode_page(e)
-            video = self.get_video_src(page)
+            video = self.get_video_src(page, p[8]) #8 is the quality
             filename = p[2] + " S" + str(p[4].zfill(2)) + "E" + str(e).zfill(3)  # 2 is the title, 4 is the season
             print("downloading " + filename)
-            self.download_video(video, filename, p[7])  # 7 is the destination
+            self.download_video(video, filename, p[7], )  # 7 is the destination
             print("downloaded " + filename)
         print("done downloading " + p[2] + " Season " + p[4])
         self.close()
@@ -199,9 +200,13 @@ def get_params():
     else:
         destination = input("input show destination: ")
 
-    params = [user, password, title, anime, season, episode_min, episode_max, destination]
-    return params
+    if len(show["quality"]) != 0:
+        quality = show["quality"]
+    else:
+        quality = True
 
+    params = [user, password, title, anime, season, episode_min, episode_max, destination, quality]
+    return params
 if __name__ == "__main__":
 
     config = get_params()
