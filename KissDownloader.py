@@ -5,10 +5,11 @@ from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.keys import Keys
 import time
 import configparser
+import os
 
 
 # stuff that I may do... eventually
-#TODO deal with different episode formats
+# TODO deal with different episode formats
 # TODO error management
 # TODO standalone package
 # TODO confirm a successful login
@@ -84,8 +85,8 @@ class Downloader:
     def get_video_src(self, page, qual):
         # parses the video source link from the streaming page, currently chooses the highest available quality
         print("page is " + page)
-        x = True
 
+        x = True
         while x:
             try:
                 self.driver.get(page)
@@ -109,6 +110,12 @@ class Downloader:
 
     @staticmethod
     def download_video(url, name, destination):
+        #makes sure the directory exists
+        try:
+            os.stat(destination)
+        except:
+            os.mkdir(destination)
+
         # downloads the episode, currently assumes it to be an mp4
         filename = name + ".mp4"  # add the expected file type here
         path = destination + filename
