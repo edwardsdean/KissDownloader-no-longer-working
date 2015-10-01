@@ -1,4 +1,3 @@
-import requests
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.common.exceptions import TimeoutException
@@ -6,6 +5,7 @@ from selenium.webdriver.common.keys import Keys
 import time
 import configparser
 import os
+import pySmartDL
 
 
 # stuff that I may do... eventually
@@ -21,11 +21,9 @@ import os
 # TODO us a hidden browser instead of firefox
 # TODO support for initialization of the Downloader class with arguments or a config file instead of get_params
 # TODO support for starting the script with command line args
-# TODO support for choosing video quality instead of automatically downloading the highest quality
 # TODO detect file type instead of assuming mp4
 # TODO maybe build downloader as a module? idk man
 # TODO simultaneous downloads
-# TODO download progress
 # TODO pause downloads
 # TODO get video src through video player to avoid the need to login and handle user data
 # TODO support for queueing downloads, will be easy once configs/console launching is supported
@@ -119,12 +117,17 @@ class Downloader:
         # downloads the episode, currently assumes it to be an mp4
         filename = name + ".mp4"  # add the expected file type here
         path = destination + filename
-        r = requests.get(url, stream=True)
-        with open(path, 'wb') as f:
-            for chunk in r.iter_content(chunk_size=1024):
-                if chunk:  # filter out keep-alive new chunks
-                    f.write(chunk)
-                    f.flush()
+        obj = pySmartDL.SmartDL(url, destination, progress_bar=False, fix_urls=True)
+        obj.start(blocking=False)
+
+        while True:
+            if obj.isFinished():
+                break
+            print(str(float("{0:.2f}".format((float(obj.get_progress())*100)))) + "% done at " + pySmartDL.utils.sizeof_human(obj.get_speed(human=False)) + "/s")
+            #0.38% done at 2.9 MB/s
+            time.sleep(1)
+
+        os.rename(destination+"videoplayback", path)
         return path
 
     def close(self):
