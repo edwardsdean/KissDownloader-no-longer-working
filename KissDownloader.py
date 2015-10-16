@@ -21,7 +21,6 @@ import pySmartDL
 # TODO us a hidden browser instead of firefox
 # TODO support for initialization of the Downloader class with arguments or a config file instead of get_params
 # TODO support for starting the script with command line args
-# TODO detect file type instead of assuming mp4
 # TODO maybe build downloader as a module? idk man
 # TODO simultaneous downloads
 # TODO pause downloads
@@ -34,6 +33,7 @@ class Downloader:
         self.driver = webdriver.Firefox()
         self.driver.set_page_load_timeout(100)
         self.rootPage = ""
+        self.file_extension = ""
 
     def login(self, user, pw):
         global config
@@ -77,7 +77,7 @@ class Downloader:
             currentlink = link.get('href')
             if currentlink is None:
                 pass
-            elif "/Episode-" + str(episode).zfill(3) in currentlink:
+            elif "/Episode-" + str(episode).zfill(3) + "?" in currentlink or "/Episode-" + str(episode).zfill(2) + "?" in currentlink:
                 return "http://kissanime.com" + currentlink
 
     def get_video_src(self, page, qual):
@@ -97,17 +97,40 @@ class Downloader:
         currentpage = self.driver.page_source
         soup = BeautifulSoup(currentpage, 'html.parser')
 
-        for link in soup.findAll('a', string=qual):
-            currentlink = link.get('href')
-            if currentlink is None:
-                pass
-            elif "https://redirector.googlevideo.com/videoplayback?" in currentlink:
-                print(currentlink)
-                return currentlink
-        return False
+# 16:9 vvv
+        if qual in ["1920x1080.mp4"] and soup.findAll('a', string="1920x1080.mp4") != []:
+            for link in soup.findAll('a', string="1920x1080.mp4"):
+                self.file_extension = ".mp4"
+                return link.get('href')
+        elif qual in ["1920x1080.mp4", "1280x720.mp4"] and soup.findAll('a', string="1280x720.mp4") != []:
+            for link in soup.findAll('a', string="1280x720.mp4"):
+                self.file_extension = ".mp4"
+                return link.get('href')
+        elif qual in ["1920x1080.mp4", "1280x720.mp4", "640x360.mp4"] and soup.findAll('a', string="640x360.mp4") != []:
+            for link in soup.findAll('a', string="640x360.mp4"):
+                self.file_extension = ".mp4"
+                return link.get('href')
+        elif qual in ["1920x1080.mp4", "1280x720.mp4", "640x360.mp4", "320x180.3gp"] and soup.findAll('a', string="320x180.3gp") != []:
+            for link in soup.findAll('a', string="320x180.3gp"):
+                self.file_extension = ".3pg"
+                return link.get('href')
+# 4:3 vvv
+        elif qual in ["1920x1080.mp4", "1280x720.mp4", "640x360.mp4", "320x180.3pg", "960x720.mp4"] and soup.findAll('a', string="960x720.mp4") != []:
+            for link in soup.findAll('a', string="320x180.3gp"):
+                self.file_extension = ".mp4"
+                return link.get('href')
+        elif qual in ["1920x1080.mp4", "1280x720.mp4", "640x360.mp4", "320x180.3pg", "960x720.mp4", "480x360.mp4"] and soup.findAll('a', string="480x360.mp4") != []:
+            for link in soup.findAll('a', string="320x180.3gp"):
+                self.file_extension = ".mp4"
+                return link.get('href')
+        elif qual in ["1920x1080.mp4", "1280x720.mp4", "640x360.mp4", "320x180.3pg", "960x720.mp4", "480x360.mp4", "320x240.3pg"] and soup.findAll('a', string="480x360.3pg") != []:
+            for link in soup.findAll('a', string="320x180.3gp"):
+                self.file_extension = ".3pg"
+                return link.get('href')
+        else:
+            return False
 
-    @staticmethod
-    def download_video(url, name, destination):
+    def download_video(self, url, name, destination):
         #makes sure the directory exists
         try:
             os.stat(destination)
@@ -115,19 +138,21 @@ class Downloader:
             os.mkdir(destination)
 
         # downloads the episode, currently assumes it to be an mp4
-        filename = name + ".mp4"  # add the expected file type here
+        filename = name + self.file_extension  # add the file extension from getting the link
         path = destination + filename
+        print(url)
         obj = pySmartDL.SmartDL(url, destination, progress_bar=False, fix_urls=True)
         obj.start(blocking=False)
+        location = obj.get_dest()
 
         while True:
             if obj.isFinished():
                 break
-            print(str(float("{0:.2f}".format((float(obj.get_progress())*100)))) + "% done at " + pySmartDL.utils.sizeof_human(obj.get_speed(human=False)) + "/s")
-            #0.38% done at 2.9 MB/s
+            print(name + self.file_extension + "\t " + str(float("{0:.2f}".format((float(obj.get_progress())*100)))) + "% done at " + pySmartDL.utils.sizeof_human(obj.get_speed(human=False)) + "/s")
+            #*epiode name* 0.38% done at 2.9 MB/s
             time.sleep(1)
 
-        os.rename(destination+"videoplayback", path)
+        os.rename(location, path)
         return path
 
     def close(self):

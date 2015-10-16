@@ -15,4 +15,4 @@ you need to have the following installed to run:
 -firefox web browser
 
 
-The script may work on other platforms, but has only been tested on windows 7.
+The script may work on other platforms, but only been tested on windows 7 and windows 10.
