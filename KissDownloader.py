@@ -1,15 +1,26 @@
-from bs4 import BeautifulSoup
-from selenium import webdriver
-from selenium.common.exceptions import TimeoutException
-from selenium.webdriver.common.keys import Keys
+import pip
 import time
 import configparser
 import os
-import pySmartDL
+try:
+    from bs4 import BeautifulSoup
+except ImportError:
+    pip.main(['install', 'BeautifulSoup4'])
+try:
+    from selenium import webdriver
+    from selenium.common.exceptions import TimeoutException
+    from selenium.webdriver.common.keys import Keys
+except ImportError:
+    pip.main(['install', 'selenium'])
+try:
+    import pySmartDL
+except ImportError:
+    pip.main(['install', 'pySmartDL'])
+
+
 
 
 # stuff that I may do... eventually
-# TODO deal with different episode formats
 # TODO error management
 # TODO standalone package
 # TODO confirm a successful login
@@ -73,16 +84,28 @@ class Downloader:
     def get_episode_page(self, episode):
         # parses the streaming page of an episode from the root page
         soup = BeautifulSoup(self.rootPage, 'html.parser')
-        for link in soup.findAll('a'):
-            currentlink = link.get('href')
-            if currentlink is None:
-                pass
-            elif "/Episode-" + str(episode).zfill(3) + "?" in currentlink or "/Episode-" + str(episode).zfill(2) + "?" in currentlink:
-                return "http://kissanime.to" + currentlink
+        if episode % 1 == 0:
+            ###for non special episodes
+            episode = int(episode)
+            for link in soup.findAll('a'):
+                currentlink = link.get('href')
+                if currentlink is None:
+                    pass
+                elif "/Episode-" + str(episode).zfill(3) + "?" in currentlink or "/Episode-" + str(episode).zfill(2) + "?" in currentlink:
+                    return "http://kissanime.to" + currentlink
+        else:
+            ###for special episodes
+            episode = int(episode)
+            for link in soup.findAll('a'):
+                currentlink = link.get('href')
+                if currentlink is None:
+                    pass
+                elif "/Episode-" + str(episode).zfill(3) + "-5?" in currentlink or "/Episode-" + str(episode).zfill(2) + "-5?" in currentlink:
+                    return "http://kissanime.to" + currentlink
+        return ""
 
     def get_video_src(self, page, qual):
         # parses the video source link from the streaming page, currently chooses the highest available quality
-        print("page is " + page)
 
         x = True
         while x:
@@ -137,10 +160,8 @@ class Downloader:
         except:
             os.mkdir(destination)
 
-        # downloads the episode, currently assumes it to be an mp4
         filename = name + self.file_extension  # add the file extension from getting the link
         path = destination + filename
-        print(url)
         obj = pySmartDL.SmartDL(url, destination, progress_bar=False, fix_urls=True)
         obj.start(blocking=False)
         location = obj.get_dest()
@@ -159,7 +180,21 @@ class Downloader:
         # closes the browser window, may be used for other program-ending tasks later on
         self.driver.close()
 
+    def frange(self, start, stop, step):
+        i = start
+        while i < stop:
+            yield i
+            i += step
+
+    def zpad(self, val, n):
+        bits = val.split('.')
+        return "%s.%s" % (bits[0].zfill(n), bits[1])
+
     def download(self, p):
+        #test code
+        episode_list = []
+
+
         # takes a list of parameters and uses them to download the show
         l = self.login(p[0], p[1])  # 0 are the indices of the username and password from get_params()
         while not l:
@@ -171,15 +206,31 @@ class Downloader:
         time.sleep(10)
 
         self.rootPage = self.driver.page_source
-        for e in range(p[5], p[6]+1):  # 5 and 6 are episodes min and max
+        print("Getting episode urls please wait")
+        for e in self.frange(float(p[5]), p[6]+1, 0.5):  # 5 and 6 are episodes min and max
             page = self.get_episode_page(e)
-            video = self.get_video_src(page, p[8]) #8 is the quality
-            filename = p[2] + " S" + str(p[4].zfill(2)) + "E" + str(e).zfill(3)  # 2 is the title, 4 is the season
-            print("downloading " + filename)
-            self.download_video(video, filename, p[7], )  # 7 is the destination
-            print("downloaded " + filename)
+            if page == "":
+                pass
+            else:
+                video = self.get_video_src(page, p[8]) #8 is the quality
+                if e % 1 == 0:
+                    e = int(e)
+                    filename = p[2] + " S" + str(p[4].zfill(2)) + "E" + str(e).zfill(3)  # 2 is the title, 4 is the season
+                else:
+                    filename = p[2] + " S" + str(p[4].zfill(2)) + "E" + self.zpad(str(e), 3)  # 2 is the title, 4 is the season
+                print("Got link for " + filename)
+
+                episode_list.append((video, filename, p[7]))
+        for tuple in episode_list:
+            url = tuple[0]
+            filename = tuple[1]
+            destination = tuple[2]
+            self.download_video(video, filename, destination)
+            print("downloading ", filename)
         print("done downloading " + p[2] + " Season " + p[4])
         self.close()
+
+
 
 
 def get_params():
