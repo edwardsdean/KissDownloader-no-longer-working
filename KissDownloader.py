@@ -49,7 +49,7 @@ class Downloader:
     def login(self, user, pw):
         global config
         # go to the site login page
-        self.driver.get("http://kissanime.to/Login")
+        self.driver.get("https://kissanime.to/Login")
 
         # wait for cloudflare to figure itself out
         time.sleep(10)
@@ -67,7 +67,7 @@ class Downloader:
         time.sleep(5)
 
         # confirm that login was successful and return a bool
-        if self.driver.current_url == "http://kissanime.to/":
+        if self.driver.current_url == "https://kissanime.to/":
             return True
         else:
             # clear failed login info from config
@@ -92,7 +92,7 @@ class Downloader:
                 if currentlink is None:
                     pass
                 elif "/Episode-" + str(episode).zfill(3) + "?" in currentlink or "/Episode-" + str(episode).zfill(2) + "?" in currentlink:
-                    return "http://kissanime.to" + currentlink
+                    return "https://kissanime.to" + currentlink
         else:
             ###for special episodes
             episode = int(episode)
@@ -101,7 +101,7 @@ class Downloader:
                 if currentlink is None:
                     pass
                 elif "/Episode-" + str(episode).zfill(3) + "-5?" in currentlink or "/Episode-" + str(episode).zfill(2) + "-5?" in currentlink:
-                    return "http://kissanime.to" + currentlink
+                    return "https://kissanime.to" + currentlink
         return ""
 
     def get_video_src(self, page, qual):
