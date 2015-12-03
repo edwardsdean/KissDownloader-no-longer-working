@@ -224,6 +224,7 @@ class Downloader:
             if page[0] == "":
                 pass
             else:
+<<<<<<< HEAD
                 video = self.get_video_src(page[0], p[8]) #8 is the quality
                 # video = [url, file_extension]
                 if isinstance(video[0], str):
@@ -249,6 +250,24 @@ class Downloader:
             destination = tuple[2]
             self.download_video(url, filename, destination)
             print("downloaded ", filename)
+=======
+                video = self.get_video_src(page, p[8]) #8 is the quality
+                if isinstance(video, str):
+                    if e % 1 == 0:
+                        e = int(e)
+                        filename = p[2] + " S" + str(p[4].zfill(2)) + "E" + str(e).zfill(3)  # 2 is the title, 4 is the season
+                    else:
+                        filename = p[2] + " S" + str(p[4].zfill(2)) + "E" + self.zpad(str(e), 3)  # 2 is the title, 4 is the season
+                    print("Got link for " + filename)
+
+                    episode_list.append((video, filename, p[7]))
+        for tuple_item in episode_list:
+            url = tuple_item[0]
+            filename = tuple_item[1]
+            destination = tuple_item[2]
+            self.download_video(url, filename, destination)
+            print("downloading ", filename)
+>>>>>>> origin/master
         print("done downloading " + p[2] + " Season " + p[4])
         self.close()
 
