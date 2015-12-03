@@ -298,4 +298,4 @@ if __name__ == "__main__":
     config = get_params()
     print(config)
     DL = Downloader()
-    DL.download(config)
+
