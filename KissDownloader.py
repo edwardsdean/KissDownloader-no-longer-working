@@ -39,12 +39,13 @@ except ImportError:
 # TODO support for queueing downloads, will be easy once configs/console launching is supported
 #TODO deal with reaching the end of a show
 class Downloader:
-    def __init__(self):
+    def __init__(self, params):
         # create a webdriver instance with a lenient timeout duration
         self.driver = webdriver.Firefox()
         self.driver.set_page_load_timeout(100)
         self.rootPage = ""
         self.file_extension = ""
+        self.download(params)
 
     def login(self, user, pw):
         global config
@@ -87,22 +88,38 @@ class Downloader:
         if episode % 1 == 0:
             ###for non special episodes
             episode = int(episode)
+            # uncensored vvv
+            for link in soup.findAll('a'):
+                currentlink = link.get('href')
+                if currentlink is None:
+                    pass
+                elif "/Uncensored-Episode-" + str(episode).zfill(3) + "?" in currentlink or "/Uncensored-Episode-" + str(episode).zfill(2) + "?" in currentlink or "/uncen-Episode-" + str(episode).zfill(3) + "?" in currentlink or "/uncen-Episode-" + str(episode).zfill(2) + "?" in currentlink or "/Episode-" + str(episode).zfill(3) + "-Uncensored?" in currentlink or "/Episode-" + str(episode).zfill(2) + "-Uncensored?" in currentlink or "/Episode-" + str(episode).zfill(3) + "-uncen?" in currentlink or "/Episode-" + str(episode).zfill(2) + "-uncen?" in currentlink:
+                    return ["https://kissanime.to" + currentlink, True]
+            # censored vvv
             for link in soup.findAll('a'):
                 currentlink = link.get('href')
                 if currentlink is None:
                     pass
                 elif "/Episode-" + str(episode).zfill(3) + "?" in currentlink or "/Episode-" + str(episode).zfill(2) + "?" in currentlink:
-                    return "https://kissanime.to" + currentlink
+                    return ["https://kissanime.to" + currentlink, True]
         else:
             ###for special episodes
             episode = int(episode)
+            # uncensored vvv
+            for link in soup.findAll('a'):
+                currentlink = link.get('href')
+                if currentlink is None:
+                    pass
+                elif "/Uncensored-Episode-" + str(episode).zfill(3) + "-5?" in currentlink or "/Uncensored-Episode-" + str(episode).zfill(2) + "-5?" in currentlink or "/Episode-" + str(episode).zfill(3) + "-5-Uncensored?" in currentlink or "/Episode-" + str(episode).zfill(2) + "-5-Uncensored?" in currentlink:
+                    return ["https://kissanime.to" + currentlink, False]
+            # censored (normal) vvv
             for link in soup.findAll('a'):
                 currentlink = link.get('href')
                 if currentlink is None:
                     pass
                 elif "/Episode-" + str(episode).zfill(3) + "-5?" in currentlink or "/Episode-" + str(episode).zfill(2) + "-5?" in currentlink:
-                    return "https://kissanime.to" + currentlink
-        return ""
+                    return ["https://kissanime.to" + currentlink, False]
+        return ["", False]
 
     def get_video_src(self, page, qual):
         # parses the video source link from the streaming page, currently chooses the highest available quality
@@ -123,33 +140,26 @@ class Downloader:
 # 16:9 vvv
         if qual in ["1920x1080.mp4"] and soup.findAll('a', string="1920x1080.mp4") != []:
             for link in soup.findAll('a', string="1920x1080.mp4"):
-                self.file_extension = ".mp4"
-                return link.get('href')
+                return [link.get('href'), ".mp4"]
         elif qual in ["1920x1080.mp4", "1280x720.mp4"] and soup.findAll('a', string="1280x720.mp4") != []:
             for link in soup.findAll('a', string="1280x720.mp4"):
-                self.file_extension = ".mp4"
-                return link.get('href')
+                return [link.get('href'), ".mp4"]
         elif qual in ["1920x1080.mp4", "1280x720.mp4", "640x360.mp4"] and soup.findAll('a', string="640x360.mp4") != []:
             for link in soup.findAll('a', string="640x360.mp4"):
-                self.file_extension = ".mp4"
-                return link.get('href')
+                return [link.get('href'), ".mp4"]
         elif qual in ["1920x1080.mp4", "1280x720.mp4", "640x360.mp4", "320x180.3gp"] and soup.findAll('a', string="320x180.3gp") != []:
             for link in soup.findAll('a', string="320x180.3gp"):
-                self.file_extension = ".3pg"
-                return link.get('href')
+                return [link.get('href'), ".3pg"]
 # 4:3 vvv
         elif qual in ["1920x1080.mp4", "1280x720.mp4", "640x360.mp4", "320x180.3pg", "960x720.mp4"] and soup.findAll('a', string="960x720.mp4") != []:
             for link in soup.findAll('a', string="320x180.3gp"):
-                self.file_extension = ".mp4"
-                return link.get('href')
+                return [link.get('href'), ".mp4"]
         elif qual in ["1920x1080.mp4", "1280x720.mp4", "640x360.mp4", "320x180.3pg", "960x720.mp4", "480x360.mp4"] and soup.findAll('a', string="480x360.mp4") != []:
             for link in soup.findAll('a', string="320x180.3gp"):
-                self.file_extension = ".mp4"
-                return link.get('href')
+                return [link.get('href'), ".mp4"]
         elif qual in ["1920x1080.mp4", "1280x720.mp4", "640x360.mp4", "320x180.3pg", "960x720.mp4", "480x360.mp4", "320x240.3pg"] and soup.findAll('a', string="480x360.3pg") != []:
             for link in soup.findAll('a', string="320x180.3gp"):
-                self.file_extension = ".3pg"
-                return link.get('href')
+                return [link.get('href'), ".3pg"]
         else:
             return False
 
@@ -160,7 +170,7 @@ class Downloader:
         except:
             os.mkdir(destination)
 
-        filename = name + self.file_extension  # add the file extension from getting the link
+        filename = name
         path = destination + filename
         obj = pySmartDL.SmartDL(url, destination, progress_bar=False, fix_urls=True)
         obj.start(blocking=False)
@@ -169,11 +179,13 @@ class Downloader:
         while True:
             if obj.isFinished():
                 break
-            print(name + self.file_extension + "\t " + str(float("{0:.2f}".format((float(obj.get_progress())*100)))) + "% done at " + pySmartDL.utils.sizeof_human(obj.get_speed(human=False)) + "/s")
+            print(name + "\t " + str(float("{0:.2f}".format((float(obj.get_progress())*100)))) + "% done at " + pySmartDL.utils.sizeof_human(obj.get_speed(human=False)) + "/s")
             #*epiode name* 0.38% done at 2.9 MB/s
             time.sleep(1)
-
-        os.rename(location, path)
+        if obj.isFinished():
+            os.rename(location, path)
+        else:
+            print("Download of " + name + " failed")
         return path
 
     def close(self):
@@ -191,7 +203,6 @@ class Downloader:
         return "%s.%s" % (bits[0].zfill(n), bits[1])
 
     def download(self, p):
-        #test code
         episode_list = []
 
 
@@ -209,24 +220,35 @@ class Downloader:
         print("Getting episode urls please wait")
         for e in self.frange(float(p[5]), p[6]+1, 0.5):  # 5 and 6 are episodes min and max
             page = self.get_episode_page(e)
-            if page == "":
+            # page = [page_url, isUncensored]
+            if page[0] == "":
                 pass
             else:
-                video = self.get_video_src(page, p[8]) #8 is the quality
-                if e % 1 == 0:
-                    e = int(e)
-                    filename = p[2] + " S" + str(p[4].zfill(2)) + "E" + str(e).zfill(3)  # 2 is the title, 4 is the season
-                else:
-                    filename = p[2] + " S" + str(p[4].zfill(2)) + "E" + self.zpad(str(e), 3)  # 2 is the title, 4 is the season
-                print("Got link for " + filename)
-
-                episode_list.append((video, filename, p[7]))
+                video = self.get_video_src(page[0], p[8]) #8 is the quality
+                # video = [url, file_extension]
+                if isinstance(video[0], str):
+                    if video[1]:  # if episode is called uncensored
+                        if e % 1 == 0:
+                            e = int(e)
+                            filename = p[2] + " S" + str(p[4].zfill(2)) + "E" + str(e).zfill(3) + " Uncensored" + video[1]  # 2 is the title, 4 is the season
+                        else:
+                            filename = p[2] + " S" + str(p[4].zfill(2)) + "E" + self.zpad(str(e), 3) + " Uncensored" + video[1]  # 2 is the title, 4 is the season
+                    else:
+                        if e % 1 == 0:
+                            e = int(e)
+                            filename = p[2] + " S" + str(p[4].zfill(2)) + "E" + str(e).zfill(3) + video[1]  # 2 is the title, 4 is the season
+                        else:
+                            filename = p[2] + " S" + str(p[4].zfill(2)) + "E" + self.zpad(str(e), 3) + video[1]  # 2 is the title, 4 is the season
+                    print("Got link for " + filename)
+                    episode_list.append((video[0], filename, p[7]))
+                else: ("no link for episode " + str(e))
+        self.driver.close()
         for tuple in episode_list:
             url = tuple[0]
             filename = tuple[1]
             destination = tuple[2]
-            self.download_video(video, filename, destination)
-            print("downloading ", filename)
+            self.download_video(url, filename, destination)
+            print("downloaded ", filename)
         print("done downloading " + p[2] + " Season " + p[4])
         self.close()
 
@@ -295,7 +317,46 @@ def get_params():
     return params
 if __name__ == "__main__":
 
+
+
+    #params = [user, password, title, anime, season, episode_min, episode_max, destination, quality]
+
     config = get_params()
     print(config)
-    DL = Downloader()
+    DL = Downloader(config)
 
+    # continue_bul = ""
+    # config_list = []
+    # root_destination = input("input root destination: ")
+    # user = input("input username: ")
+    # password = input("input password: ")
+    #
+    # while continue_bul == "":
+    #
+    #     title = input("input show title: ")
+    #
+    #     anime = input("input show url: ")
+    #
+    #     # season = input("input show season number: ")
+    #     season = "1"
+    #
+    #     episode_min = input("input episodeMin: ")
+    #     episode_min = int(episode_min)  # episode numbers are used to iterate a range, so int()
+    #
+    #     episode_max = input("input episodeMax: ")
+    #     episode_max = int(episode_max)
+    #
+    #     destination = root_destination + title + "\\"
+    #
+    #     quality = '1920x1080.mp4'
+    #
+    #     continue_bul = input("Continue adding anime blank to continue: ")
+    #
+    #     params = [user, password, title, anime, season, episode_min, episode_max, destination, quality]
+    #     config_list.append(params)
+    #     print(config_list)
+    #
+    #
+    #
+    # for list in config_list:
+    #     Downloader(list)
