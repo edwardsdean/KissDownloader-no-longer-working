@@ -38,8 +38,13 @@ except ImportError:
 # TODO get video src through video player to avoid the need to login and handle user data
 # TODO support for queueing downloads, will be easy once configs/console launching is supported
 #TODO deal with reaching the end of a show
-class Downloader:
+
+
+class KissDownloader:
     def __init__(self, params):
+        for param in params:
+            print(param)
+            print(type(param))
         # create a webdriver instance with a lenient timeout duration
         self.driver = webdriver.Firefox()
         self.driver.set_page_load_timeout(100)
@@ -101,7 +106,7 @@ class Downloader:
                 if currentlink is None:
                     pass
                 elif "/Episode-" + str(episode).zfill(3) + "?" in currentlink or "/Episode-" + str(episode).zfill(2) + "?" in currentlink:
-                    return ["https://kissanime.to" + currentlink, True]
+                    return ["https://kissanime.to" + currentlink, False]
         else:
             ###for special episodes
             episode = int(episode)
@@ -111,7 +116,7 @@ class Downloader:
                 if currentlink is None:
                     pass
                 elif "/Uncensored-Episode-" + str(episode).zfill(3) + "-5?" in currentlink or "/Uncensored-Episode-" + str(episode).zfill(2) + "-5?" in currentlink or "/Episode-" + str(episode).zfill(3) + "-5-Uncensored?" in currentlink or "/Episode-" + str(episode).zfill(2) + "-5-Uncensored?" in currentlink:
-                    return ["https://kissanime.to" + currentlink, False]
+                    return ["https://kissanime.to" + currentlink, True]
             # censored (normal) vvv
             for link in soup.findAll('a'):
                 currentlink = link.get('href')
@@ -157,7 +162,7 @@ class Downloader:
         elif qual in ["1920x1080.mp4", "1280x720.mp4", "640x360.mp4", "320x180.3pg", "960x720.mp4", "480x360.mp4"] and soup.findAll('a', string="480x360.mp4") != []:
             for link in soup.findAll('a', string="320x180.3gp"):
                 return [link.get('href'), ".mp4"]
-        elif qual in ["1920x1080.mp4", "1280x720.mp4", "640x360.mp4", "320x180.3pg", "960x720.mp4", "480x360.mp4", "320x240.3pg"] and soup.findAll('a', string="480x360.3pg") != []:
+        elif qual in ["1920x1080.mp4", "1280x720.mp4", "640x360.mp4", "320x180.3pg", "960x720.mp4", "480x360.mp4", "320x240.3pg"] and soup.findAll('a', string="320x240.3pg") != []:
             for link in soup.findAll('a', string="320x180.3gp"):
                 return [link.get('href'), ".3pg"]
         else:
@@ -218,7 +223,7 @@ class Downloader:
 
         self.rootPage = self.driver.page_source
         print("Getting episode urls please wait")
-        for e in self.frange(float(p[5]), p[6]+1, 0.5):  # 5 and 6 are episodes min and max
+        for e in self.frange(float(p[5]), int(p[6])+1, 0.5):  # 5 and 6 are episodes min and max
             page = self.get_episode_page(e)
             # page = [page_url, isUncensored]
             if page[0] == "":
@@ -323,7 +328,7 @@ if __name__ == "__main__":
 
     config = get_params()
     print(config)
-    DL = Downloader(config)
+    DL = KissDownloader(config)
 
     # continue_bul = ""
     # config_list = []

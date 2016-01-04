@@ -22,5 +22,5 @@ Note: This works best with your default player set to flash, and auto play turne
 
 For Mac users change the config file destination to look like 
 ```
-destination = /Users/HomeUser/Desktop/Anime/
+destination = /Users/HomeUser/Desktop/
 ```
