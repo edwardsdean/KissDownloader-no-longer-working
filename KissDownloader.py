@@ -232,7 +232,7 @@ class KissDownloader:
                 video = self.get_video_src(page[0], p[8]) #8 is the quality
                 # video = [url, file_extension]
                 if isinstance(video[0], str):
-                    if video[1]:  # if episode is called uncensored
+                    if page[1]:  # if episode is called uncensored
                         if e % 1 == 0:
                             e = int(e)
                             filename = p[2] + " S" + str(p[4].zfill(2)) + "E" + str(e).zfill(3) + " Uncensored" + video[1]  # 2 is the title, 4 is the season
@@ -255,7 +255,7 @@ class KissDownloader:
             self.download_video(url, filename, destination)
             print("downloaded ", filename)
         print("done downloading " + p[2] + " Season " + p[4])
-        self.close()
+
 
 
 
@@ -326,42 +326,40 @@ if __name__ == "__main__":
 
     #params = [user, password, title, anime, season, episode_min, episode_max, destination, quality]
 
-    config = get_params()
-    print(config)
-    DL = KissDownloader(config)
+    # config = get_params()
+    # print(config)
+    # DL = KissDownloader(config)
 
-    # continue_bul = ""
-    # config_list = []
-    # root_destination = input("input root destination: ")
-    # user = input("input username: ")
-    # password = input("input password: ")
-    #
-    # while continue_bul == "":
-    #
-    #     title = input("input show title: ")
-    #
-    #     anime = input("input show url: ")
-    #
-    #     # season = input("input show season number: ")
-    #     season = "1"
-    #
-    #     episode_min = input("input episodeMin: ")
-    #     episode_min = int(episode_min)  # episode numbers are used to iterate a range, so int()
-    #
-    #     episode_max = input("input episodeMax: ")
-    #     episode_max = int(episode_max)
-    #
-    #     destination = root_destination + title + "\\"
-    #
-    #     quality = '1920x1080.mp4'
-    #
-    #     continue_bul = input("Continue adding anime blank to continue: ")
-    #
-    #     params = [user, password, title, anime, season, episode_min, episode_max, destination, quality]
-    #     config_list.append(params)
-    #     print(config_list)
-    #
-    #
-    #
-    # for list in config_list:
-    #     Downloader(list)
+    continue_bul = ""
+    config_list = []
+    root_destination = input("input root destination: ")
+    user = input("input username: ")
+    password = input("input password: ")
+
+    while continue_bul == "":
+
+        title = input("input show title: ")
+
+        anime = input("input show url: ")
+
+        # season = input("input show season number: ")
+        season = "1"
+
+        episode_min = input("input episodeMin: ")
+        episode_min = int(episode_min)  # episode numbers are used to iterate a range, so int()
+
+        episode_max = input("input episodeMax: ")
+        episode_max = int(episode_max)
+
+        destination = root_destination + title + "\\"
+
+        quality = '1920x1080.mp4'
+
+        continue_bul = input("Continue adding anime blank to continue: ")
+
+        params = [user, password, title, anime, season, episode_min, episode_max, destination, quality]
+        config_list.append(params)
+        print(config_list)
+
+    for config in config_list:
+        KissDownloader(config)
