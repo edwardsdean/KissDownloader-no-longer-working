@@ -157,13 +157,13 @@ class KissDownloader:
                 return [link.get('href'), ".3pg"]
 # 4:3 vvv
         elif qual in ["1920x1080.mp4", "1280x720.mp4", "640x360.mp4", "320x180.3pg", "960x720.mp4"] and soup.findAll('a', string="960x720.mp4") != []:
-            for link in soup.findAll('a', string="320x180.3gp"):
+            for link in soup.findAll('a', string="960x720.mp4"):
                 return [link.get('href'), ".mp4"]
         elif qual in ["1920x1080.mp4", "1280x720.mp4", "640x360.mp4", "320x180.3pg", "960x720.mp4", "480x360.mp4"] and soup.findAll('a', string="480x360.mp4") != []:
-            for link in soup.findAll('a', string="320x180.3gp"):
+            for link in soup.findAll('a', string="480x360.mp4"):
                 return [link.get('href'), ".mp4"]
         elif qual in ["1920x1080.mp4", "1280x720.mp4", "640x360.mp4", "320x180.3pg", "960x720.mp4", "480x360.mp4", "320x240.3pg"] and soup.findAll('a', string="320x240.3pg") != []:
-            for link in soup.findAll('a', string="320x180.3gp"):
+            for link in soup.findAll('a', string="320x240.3pg"):
                 return [link.get('href'), ".3pg"]
         else:
             return False
