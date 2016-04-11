@@ -69,17 +69,22 @@ class App(Frame):
         global config
         # create a configparser instance and open config.ini
         config = configparser.ConfigParser()
-        config.read("config.ini")
+        config.read("config.ini", encoding='utf-8')
 
         # fill gui from what is in the config
-        auth = config["Login"]
+        site_select = config["Website"]
+        if len(site_select["subsite"]) != 0:
+            self.site_select.select_clear()
+            self.site_select.set(site_select["subsite"])
+
+        auth = config["login"]
         if len(auth["username"]) != 0:
             self.user_name.delete(0, END)
             self.user_name.insert(0, auth["username"])
 
         if len(auth["password"]) != 0:
             self.user_password.delete(0, END)
-            password = auth["password"]
+            self.user_password.insert (0, auth["password"])
 
         show = config["show"]
         if len(show["title"]) != 0:
@@ -106,9 +111,9 @@ class App(Frame):
             self.destination.delete(0, END)
             self.destination.insert(0, show["destination"])
 
-        # if len(show["quality"]) != 0:
-        #     self.quality_select.delete(0, END)
-        #     self.quality_select.delete(0, show["quality"])
+        if len(show["quality"]) != 0:
+            self.quality_select.select_clear()
+            self.quality_select.set(show["quality"])
 
     def run_download(self):
         if self.destination.get().endswith('\\'):
