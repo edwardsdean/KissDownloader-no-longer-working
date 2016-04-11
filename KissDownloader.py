@@ -35,7 +35,7 @@ except ImportError:
 # TODO maybe build downloader as a module? idk man
 # TODO simultaneous downloads
 # TODO pause downloads
-# TODO get video src through video player to avoid the need to login and handle user data
+# TODO get video src through video player to avoid the need to login and handle user data   - not possible to get 1080p this way
 # TODO support for queueing downloads, will be easy once configs/console launching is supported
 #TODO deal with reaching the end of a show
 
