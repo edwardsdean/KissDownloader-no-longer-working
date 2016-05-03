@@ -98,15 +98,15 @@ class KissDownloader:
                 currentlink = link.get('href')
                 if currentlink is None:
                     pass
-                elif "/Uncensored-Episode-" + str(episode).zfill(3) + "?" in currentlink or "/Uncensored-Episode-" + str(episode).zfill(2) + "?" in currentlink or "/uncen-Episode-" + str(episode).zfill(3) + "?" in currentlink or "/uncen-Episode-" + str(episode).zfill(2) + "?" in currentlink or "/Episode-" + str(episode).zfill(3) + "-Uncensored?" in currentlink or "/Episode-" + str(episode).zfill(2) + "-Uncensored?" in currentlink or "/Episode-" + str(episode).zfill(3) + "-uncen?" in currentlink or "/Episode-" + str(episode).zfill(2) + "-uncen?" in currentlink:
-                    return ["https://kissanime.to" + currentlink, True]
+                elif "/uncensored-episode-" + str(episode).zfill(3) + "?" in currentlink.lower() or "/uncensored-episode-" + str(episode).zfill(2) + "?" in currentlink.lower() or "/uncen-episode-" + str(episode).zfill(3) + "?" in currentlink.lower() or "/uncen-episode-" + str(episode).zfill(2) + "?" in currentlink.lower() or "/episode-" + str(episode).zfill(3) + "-uncensored?" in currentlink.lower() or "/episode-" + str(episode).zfill(2) + "-uncensored?" in currentlink.lower() or "/episode-" + str(episode).zfill(3) + "-uncen?" in currentlink.lower() or "/episode-" + str(episode).zfill(2) + "-uncen?" in currentlink.lower():
+                    return ["https://kissanime.to" + currentlink.lower(), True]
             # censored vvv
             for link in soup.findAll('a'):
                 currentlink = link.get('href')
                 if currentlink is None:
                     pass
-                elif "/Episode-" + str(episode).zfill(3) + "?" in currentlink or "/Episode-" + str(episode).zfill(2) + "?" in currentlink:
-                    return ["https://kissanime.to" + currentlink, False]
+                elif "/episode-" + str(episode).zfill(3) + "?" in currentlink.lower() or "/episode-" + str(episode).zfill(2) + "?" in currentlink.lower():
+                    return ["https://kissanime.to" + currentlink.lower(), False]
         else:
             ###for special episodes
             episode = int(episode)
@@ -115,15 +115,18 @@ class KissDownloader:
                 currentlink = link.get('href')
                 if currentlink is None:
                     pass
-                elif "/Uncensored-Episode-" + str(episode).zfill(3) + "-5?" in currentlink or "/Uncensored-Episode-" + str(episode).zfill(2) + "-5?" in currentlink or "/Episode-" + str(episode).zfill(3) + "-5-Uncensored?" in currentlink or "/Episode-" + str(episode).zfill(2) + "-5-Uncensored?" in currentlink:
-                    return ["https://kissanime.to" + currentlink, True]
+                elif "/uncensored-episode-" + str(episode).zfill(3) + "-5?" in currentlink.lower() or "/uncensored-episode-" + str(episode).zfill(2) + "-5?" in currentlink.lower() or "/uncen-episode-" + str(episode).zfill(3) + "-5?" in currentlink.lower() or "/uncen-episode-" + str(episode).zfill(2) + "-5?" in currentlink.lower() or "/episode-" + str(episode).zfill(3) + "-5-uncensored?" in currentlink.lower() or "/episode-" + str(episode).zfill(2) + "-5-uncensored?" in currentlink.lower() or "/episode-" + str(episode).zfill(3) + "-5-uncen?" in currentlink.lower() or "/episode-" + str(episode).zfill(2) + "-5-uncen?" in currentlink.lower():
+
+
+                ############    "/uncensored-episode-" + str(episode).zfill(3) + "-5?" in currentlink.lower() or "/uncensored-episode-" + str(episode).zfill(2) + "-5?" in currentlink.lower() or "/episode-" + str(episode).zfill(3) + "-5-uncensored?" in currentlink.lower() or "/episode-" + str(episode).zfill(2) + "-5-uncensored?" in currentlink.lower():
+                    return ["https://kissanime.to" + currentlink.lower(), True]
             # censored (normal) vvv
             for link in soup.findAll('a'):
                 currentlink = link.get('href')
                 if currentlink is None:
                     pass
-                elif "/Episode-" + str(episode).zfill(3) + "-5?" in currentlink or "/Episode-" + str(episode).zfill(2) + "-5?" in currentlink:
-                    return ["https://kissanime.to" + currentlink, False]
+                elif "/episode-" + str(episode).zfill(3) + "-5?" in currentlink.lower() or "/episode-" + str(episode).zfill(2) + "-5?" in currentlink.lower():
+                    return ["https://kissanime.to" + currentlink.lower(), False]
         return ["", False]
 
     def get_video_src(self, page, qual):
