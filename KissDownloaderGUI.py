@@ -15,7 +15,7 @@ class App(Frame):
         self.site_select_label = Label(self, text="Select Site to download from: ").grid(row=1, column=1)
     # create a Combobox with site to choose from
     # currently not in effect
-        self.available_sites = ['kissanime.to']
+        self.available_sites = ['kissanime.to', 'kisscartoon.me', 'kissasian.com']
         self.site_select = Combobox(self, values=self.available_sites)
         self.site_select.grid(row=1, column=2, padx=32, pady=8)
     # create username label and field
@@ -120,7 +120,7 @@ class App(Frame):
             destination = self.destination.get() + self.title.get() + "\\"
         else:
             destination = self.destination.get() + "\\" + self.title.get() + "\\"
-        params = [self.user_name.get(), self.user_password.get(), self.title.get(), self.url.get(), str(self.season_num.get()), str(self.episode_min.get()), str(self.episode_max.get()), destination, self.quality_select.get()]
+        params = [self.user_name.get(), self.user_password.get(), self.title.get(), self.url.get(), str(self.season_num.get()), str(self.episode_min.get()), str(self.episode_max.get()), destination, self.quality_select.get(), self.site_select.get()]
         print(params)
         KissDownloader(params)
 

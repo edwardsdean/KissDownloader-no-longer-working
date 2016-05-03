@@ -44,7 +44,6 @@ class KissDownloader:
     def __init__(self, params):
         for param in params:
             print(param)
-            print(type(param))
         # create a webdriver instance with a lenient timeout duration
         self.driver = webdriver.Firefox()
         self.driver.set_page_load_timeout(100)
@@ -52,10 +51,10 @@ class KissDownloader:
         self.file_extension = ""
         self.download(params)
 
-    def login(self, user, pw):
+    def login(self, user, pw, site):
         global config
         # go to the site login page
-        self.driver.get("https://kissanime.to/Login")
+        self.driver.get("http://" + str(site) + "/Login")
 
         # wait for cloudflare to figure itself out
         time.sleep(10)
@@ -73,7 +72,7 @@ class KissDownloader:
         time.sleep(5)
 
         # confirm that login was successful and return a bool
-        if self.driver.current_url == "https://kissanime.to/":
+        if self.driver.current_url == "http://" + site + "/":
             return True
         else:
             # clear failed login info from config
@@ -87,46 +86,71 @@ class KissDownloader:
 
             return False
 
-    def get_episode_page(self, episode):
+    def get_episode_page(self, episode, site):
         # parses the streaming page of an episode from the root page
         soup = BeautifulSoup(self.rootPage, 'html.parser')
-        if episode % 1 == 0:
-            ###for non special episodes
-            episode = int(episode)
-            # uncensored vvv
-            for link in soup.findAll('a'):
-                currentlink = link.get('href')
-                if currentlink is None:
-                    pass
-                elif "/uncensored-episode-" + str(episode).zfill(3) + "?" in currentlink.lower() or "/uncensored-episode-" + str(episode).zfill(2) + "?" in currentlink.lower() or "/uncen-episode-" + str(episode).zfill(3) + "?" in currentlink.lower() or "/uncen-episode-" + str(episode).zfill(2) + "?" in currentlink.lower() or "/episode-" + str(episode).zfill(3) + "-uncensored?" in currentlink.lower() or "/episode-" + str(episode).zfill(2) + "-uncensored?" in currentlink.lower() or "/episode-" + str(episode).zfill(3) + "-uncen?" in currentlink.lower() or "/episode-" + str(episode).zfill(2) + "-uncen?" in currentlink.lower():
-                    return ["https://kissanime.to" + currentlink.lower(), True]
-            # censored vvv
-            for link in soup.findAll('a'):
-                currentlink = link.get('href')
-                if currentlink is None:
-                    pass
-                elif "/episode-" + str(episode).zfill(3) + "?" in currentlink.lower() or "/episode-" + str(episode).zfill(2) + "?" in currentlink.lower():
-                    return ["https://kissanime.to" + currentlink.lower(), False]
+        ###for kisscartoon.me
+
+        if site == "kisscartoon.me":
+            if episode % 1 == 0:
+                ###for non special episodes
+                episode = int(episode)
+                for link in soup.findAll('a'):
+                    currentlink = link.get('href')
+                    if currentlink is None:
+                        pass
+                    elif "/episode-" + str(episode).zfill(3) + "-" in currentlink.lower() or "/episode-" + str(episode).zfill(2) + "-" in currentlink.lower():
+                        return ["http://" + site + "" + currentlink.lower(), False]
+            else:
+                ###for special episodes
+                episode = int(episode)
+                # uncensored vvv
+                for link in soup.findAll('a'):
+                    currentlink = link.get('href')
+                    if currentlink is None:
+                        pass
+                    elif "/episode-" + str(episode).zfill(3) + "-5" in currentlink.lower() or "/episode-" + str(episode).zfill(2) + "-5" in currentlink.lower():
+                        return ["http://" + site + "" + currentlink.lower(), False]
         else:
-            ###for special episodes
-            episode = int(episode)
-            # uncensored vvv
-            for link in soup.findAll('a'):
-                currentlink = link.get('href')
-                if currentlink is None:
-                    pass
-                elif "/uncensored-episode-" + str(episode).zfill(3) + "-5?" in currentlink.lower() or "/uncensored-episode-" + str(episode).zfill(2) + "-5?" in currentlink.lower() or "/uncen-episode-" + str(episode).zfill(3) + "-5?" in currentlink.lower() or "/uncen-episode-" + str(episode).zfill(2) + "-5?" in currentlink.lower() or "/episode-" + str(episode).zfill(3) + "-5-uncensored?" in currentlink.lower() or "/episode-" + str(episode).zfill(2) + "-5-uncensored?" in currentlink.lower() or "/episode-" + str(episode).zfill(3) + "-5-uncen?" in currentlink.lower() or "/episode-" + str(episode).zfill(2) + "-5-uncen?" in currentlink.lower():
+
+            #vvvvvv for kissanime.to / kissasian.com - might seperate if needed
+            if episode % 1 == 0:
+                ###for non special episodes
+                episode = int(episode)
+                # uncensored vvv
+                for link in soup.findAll('a'):
+                    currentlink = link.get('href')
+                    if currentlink is None:
+                        pass
+                    elif "/uncensored-episode-" + str(episode).zfill(3) + "?" in currentlink.lower() or "/uncensored-episode-" + str(episode).zfill(2) + "?" in currentlink.lower() or "/uncen-episode-" + str(episode).zfill(3) + "?" in currentlink.lower() or "/uncen-episode-" + str(episode).zfill(2) + "?" in currentlink.lower() or "/episode-" + str(episode).zfill(3) + "-uncensored?" in currentlink.lower() or "/episode-" + str(episode).zfill(2) + "-uncensored?" in currentlink.lower() or "/episode-" + str(episode).zfill(3) + "-uncen?" in currentlink.lower() or "/episode-" + str(episode).zfill(2) + "-uncen?" in currentlink.lower():
+                        return ["http://" + site + "" + currentlink.lower(), True]
+                # censored vvv
+                for link in soup.findAll('a'):
+                    currentlink = link.get('href')
+                    if currentlink is None:
+                        pass
+                    elif "/episode-" + str(episode).zfill(3) + "?" in currentlink.lower() or "/episode-" + str(episode).zfill(2) + "?" in currentlink.lower():
+                        return ["http://" + site + "" + currentlink.lower(), False]
+            else:
+                ###for special episodes
+                episode = int(episode)
+                # uncensored vvv
+                for link in soup.findAll('a'):
+                    currentlink = link.get('href')
+                    if currentlink is None:
+                        pass
+                    elif "/uncensored-episode-" + str(episode).zfill(3) + "-5?" in currentlink.lower() or "/uncensored-episode-" + str(episode).zfill(2) + "-5?" in currentlink.lower() or "/uncen-episode-" + str(episode).zfill(3) + "-5?" in currentlink.lower() or "/uncen-episode-" + str(episode).zfill(2) + "-5?" in currentlink.lower() or "/episode-" + str(episode).zfill(3) + "-5-uncensored?" in currentlink.lower() or "/episode-" + str(episode).zfill(2) + "-5-uncensored?" in currentlink.lower() or "/episode-" + str(episode).zfill(3) + "-5-uncen?" in currentlink.lower() or "/episode-" + str(episode).zfill(2) + "-5-uncen?" in currentlink.lower():
 
 
-                ############    "/uncensored-episode-" + str(episode).zfill(3) + "-5?" in currentlink.lower() or "/uncensored-episode-" + str(episode).zfill(2) + "-5?" in currentlink.lower() or "/episode-" + str(episode).zfill(3) + "-5-uncensored?" in currentlink.lower() or "/episode-" + str(episode).zfill(2) + "-5-uncensored?" in currentlink.lower():
-                    return ["https://kissanime.to" + currentlink.lower(), True]
-            # censored (normal) vvv
-            for link in soup.findAll('a'):
-                currentlink = link.get('href')
-                if currentlink is None:
-                    pass
-                elif "/episode-" + str(episode).zfill(3) + "-5?" in currentlink.lower() or "/episode-" + str(episode).zfill(2) + "-5?" in currentlink.lower():
-                    return ["https://kissanime.to" + currentlink.lower(), False]
+                    ############    "/uncensored-episode-" + str(episode).zfill(3) + "-5?" in currentlink.lower() or "/uncensored-episode-" + str(episode).zfill(2) + "-5?" in currentlink.lower() or "/episode-" + str(episode).zfill(3) + "-5-uncensored?" in currentlink.lower() or "/episode-" + str(episode).zfill(2) + "-5-uncensored?" in currentlink.lower():
+                        return ["http://" + site + "" + currentlink.lower(), True]
+                # censored (normal) vvv
+                for link in soup.findAll('a'):
+                    currentlink = link.get('href')
+                    if currentlink is None:
+                        pass
+                    elif "/episode-" + str(episode).zfill(3) + "-5?" in currentlink.lower() or "/episode-" + str(episode).zfill(2) + "-5?" in currentlink.lower():
+                        return ["http://" + site + "" + currentlink.lower(), False]
         return ["", False]
 
     def get_video_src(self, page, qual):
@@ -213,12 +237,11 @@ class KissDownloader:
     def download(self, p):
         episode_list = []
 
-
+        #p = [user, password, title, anime, season, episode_min, episode_max, destination, quality, site]
         # takes a list of parameters and uses them to download the show
-        l = self.login(p[0], p[1])  # 0 are the indices of the username and password from get_params()
+        l = self.login(p[0], p[1], p[9])  # 0 are the indices of the username and password from get_params()
         while not l:
             print("login failed, try again")
-            p = get_params()
             l = self.login(p[0], p[1])
 
         self.driver.get(p[3])  # 3 is the index of the url
@@ -227,7 +250,7 @@ class KissDownloader:
         self.rootPage = self.driver.page_source
         print("Getting episode urls please wait")
         for e in self.frange(float(p[5]), int(p[6])+1, 0.5):  # 5 and 6 are episodes min and max
-            page = self.get_episode_page(e)
+            page = self.get_episode_page(e, p[9])
             # page = [page_url, isUncensored]
             if page[0] == "":
                 pass
@@ -260,109 +283,6 @@ class KissDownloader:
         print("done downloading " + p[2] + " Season " + p[4])
 
 
-
-
-
-def get_params():
-    global config
-    # create a configparser instance and open config.ini
-    config = configparser.ConfigParser()
-    config.read("config.ini")
-
-    # check if each parameter is present in the config file
-    # if not, get it from the user
-    auth = config["Login"]
-
-    if len(auth["username"]) != 0:
-        user = auth["username"]
-    else:
-        user = input("input username: ")
-
-    if len(auth["password"]) != 0:
-        password = auth["password"]
-    else:
-        password = input("input password: ")
-
-    show = config["show"]
-    if len(show["title"]) != 0:
-        title = show["title"]
-    else:
-        title = input("input show title: ")
-
-    if len(show["anime"]) != 0:
-        anime = show["anime"]
-    else:
-        anime = input("input show url: ")
-
-    if len(show["Season"]) != 0:
-        season = show["Season"]
-    else:
-        season = input("input show season number: ")
-
-    if len(show["episodeMin"]) != 0:
-        episode_min = show["episodeMin"]
-    else:
-        episode_min = input("input episodeMin: ")
-    episode_min = int(episode_min)  # episode numbers are used to iterate a range, so int()
-
-    if len(show["episodeMax"]) != 0:
-        episode_max = show["episodeMax"]
-    else:
-        episode_max = input("input episodeMax: ")
-    episode_max = int(episode_max)
-
-    if len(show["destination"]) != 0:
-        destination = show["destination"]
-    else:
-        destination = input("input show destination: ")
-
-    if len(show["quality"]) != 0:
-        quality = show["quality"]
-    else:
-        quality = True
-
-    params = [user, password, title, anime, season, episode_min, episode_max, destination, quality]
-    return params
 if __name__ == "__main__":
-
-
-
-    #params = [user, password, title, anime, season, episode_min, episode_max, destination, quality]
-
-    # config = get_params()
-    # print(config)
-    # DL = KissDownloader(config)
-
-    continue_bul = ""
-    config_list = []
-    root_destination = input("input root destination: ")
-    user = input("input username: ")
-    password = input("input password: ")
-
-    while continue_bul == "":
-
-        title = input("input show title: ")
-
-        anime = input("input show url: ")
-
-        # season = input("input show season number: ")
-        season = "1"
-
-        episode_min = input("input episodeMin: ")
-        episode_min = int(episode_min)  # episode numbers are used to iterate a range, so int()
-
-        episode_max = input("input episodeMax: ")
-        episode_max = int(episode_max)
-
-        destination = root_destination + title + "\\"
-
-        quality = '1920x1080.mp4'
-
-        continue_bul = input("Continue adding anime blank to continue: ")
-
-        params = [user, password, title, anime, season, episode_min, episode_max, destination, quality]
-        config_list.append(params)
-        print(config_list)
-
-    for config in config_list:
-        KissDownloader(config)
+    #params = [user, password, title, anime, season, episode_min, episode_max, destination, quality, site]
+    print('please run from KissDownloaderGUI.py')
