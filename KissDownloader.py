@@ -72,19 +72,10 @@ class KissDownloader:
         time.sleep(5)
 
         # confirm that login was successful and return a bool
-        if self.driver.current_url == "http://" + site + "/":
-            return True
-        else:
-            # clear failed login info from config
-            config = configparser.ConfigParser()
-            config.read("config.ini")
-            config["login"]["username"] = ""
-            config["login"]["password"] = ""
-
-            with open("config.ini", "w") as configfile:
-                config.write(configfile)
-
+        if self.driver.current_url == "https://" + site + "/login" or self.driver.current_url == "http://" + site + "/login":
             return False
+        else:
+            return True
 
     def get_episode_page(self, episode, site):
         # parses the streaming page of an episode from the root page
@@ -242,7 +233,7 @@ class KissDownloader:
         l = self.login(p[0], p[1], p[9])  # 0 are the indices of the username and password from get_params()
         while not l:
             print("login failed, try again")
-            l = self.login(p[0], p[1])
+            l = self.login(p[0], p[1], p[9])
 
         self.driver.get(p[3])  # 3 is the index of the url
         time.sleep(10)
