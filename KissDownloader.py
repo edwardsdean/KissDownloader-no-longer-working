@@ -78,8 +78,8 @@ class KissDownloader:
             # clear failed login info from config
             config = configparser.ConfigParser()
             config.read("config.ini")
-            config["Login"]["username"] = ""
-            config["Login"]["password"] = ""
+            config["login"]["username"] = ""
+            config["login"]["password"] = ""
 
             with open("config.ini", "w") as configfile:
                 config.write(configfile)
