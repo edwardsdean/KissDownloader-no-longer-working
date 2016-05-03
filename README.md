@@ -1,10 +1,7 @@
 # KissDownloader
-Downloads shows from Kissanime.to
-Currently uses selenium to navigate the site,
-beautifulsoup to parse the html,
-and pySmartDL to download the files.
+Downloads shows from Kissanime.to, Kisscartoon.me, Kissasian.com
 
-To use the script just run the .py file in the same directory as the config.
+To use the script just run the KissDownloaderGUI.py file in the same directory as the config.
 you need to have the following installed to run:
 
 
