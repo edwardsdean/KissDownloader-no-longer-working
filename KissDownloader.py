@@ -90,7 +90,7 @@ class KissDownloader:
                     currentlink = link.get('href')
                     if currentlink is None:
                         pass
-                    elif "/episode-" + str(episode).zfill(3) + "-" in currentlink.lower() or "/episode-" + str(episode).zfill(2) + "-" in currentlink.lower():
+                    elif "episode-" + str(episode).zfill(3) + "-" in currentlink.lower() or "episode-" + str(episode).zfill(2) + "-" in currentlink.lower():
                         return ["http://" + site + "" + currentlink.lower(), False]
             else:
                 ###for special episodes
@@ -100,7 +100,7 @@ class KissDownloader:
                     currentlink = link.get('href')
                     if currentlink is None:
                         pass
-                    elif "/episode-" + str(episode).zfill(3) + "-5" in currentlink.lower() or "/episode-" + str(episode).zfill(2) + "-5" in currentlink.lower():
+                    elif "episode-" + str(episode).zfill(3) + "-5" in currentlink.lower() or "episode-" + str(episode).zfill(2) + "-5" in currentlink.lower():
                         return ["http://" + site + "" + currentlink.lower(), False]
         else:
 
@@ -113,14 +113,14 @@ class KissDownloader:
                     currentlink = link.get('href')
                     if currentlink is None:
                         pass
-                    elif "/uncensored-episode-" + str(episode).zfill(3) + "?" in currentlink.lower() or "/uncensored-episode-" + str(episode).zfill(2) + "?" in currentlink.lower() or "/uncen-episode-" + str(episode).zfill(3) + "?" in currentlink.lower() or "/uncen-episode-" + str(episode).zfill(2) + "?" in currentlink.lower() or "/episode-" + str(episode).zfill(3) + "-uncensored?" in currentlink.lower() or "/episode-" + str(episode).zfill(2) + "-uncensored?" in currentlink.lower() or "/episode-" + str(episode).zfill(3) + "-uncen?" in currentlink.lower() or "/episode-" + str(episode).zfill(2) + "-uncen?" in currentlink.lower():
+                    elif "uncensored-episode-" + str(episode).zfill(3) + "?" in currentlink.lower() or "uncensored-episode-" + str(episode).zfill(2) + "?" in currentlink.lower() or "uncen-episode-" + str(episode).zfill(3) + "?" in currentlink.lower() or "uncen-episode-" + str(episode).zfill(2) + "?" in currentlink.lower() or "episode-" + str(episode).zfill(3) + "-uncensored?" in currentlink.lower() or "episode-" + str(episode).zfill(2) + "-uncensored?" in currentlink.lower() or "episode-" + str(episode).zfill(3) + "-uncen?" in currentlink.lower() or "episode-" + str(episode).zfill(2) + "-uncen?" in currentlink.lower():
                         return ["http://" + site + "" + currentlink.lower(), True]
                 # censored vvv
                 for link in soup.findAll('a'):
                     currentlink = link.get('href')
                     if currentlink is None:
                         pass
-                    elif "/episode-" + str(episode).zfill(3) + "?" in currentlink.lower() or "/episode-" + str(episode).zfill(2) + "?" in currentlink.lower():
+                    elif "episode-" + str(episode).zfill(3) + "?" in currentlink.lower() or "episode-" + str(episode).zfill(2) + "?" in currentlink.lower():
                         return ["http://" + site + "" + currentlink.lower(), False]
             else:
                 ###for special episodes
@@ -130,7 +130,7 @@ class KissDownloader:
                     currentlink = link.get('href')
                     if currentlink is None:
                         pass
-                    elif "/uncensored-episode-" + str(episode).zfill(3) + "-5?" in currentlink.lower() or "/uncensored-episode-" + str(episode).zfill(2) + "-5?" in currentlink.lower() or "/uncen-episode-" + str(episode).zfill(3) + "-5?" in currentlink.lower() or "/uncen-episode-" + str(episode).zfill(2) + "-5?" in currentlink.lower() or "/episode-" + str(episode).zfill(3) + "-5-uncensored?" in currentlink.lower() or "/episode-" + str(episode).zfill(2) + "-5-uncensored?" in currentlink.lower() or "/episode-" + str(episode).zfill(3) + "-5-uncen?" in currentlink.lower() or "/episode-" + str(episode).zfill(2) + "-5-uncen?" in currentlink.lower():
+                    elif "uncensored-episode-" + str(episode).zfill(3) + "-5?" in currentlink.lower() or "uncensored-episode-" + str(episode).zfill(2) + "-5?" in currentlink.lower() or "uncen-episode-" + str(episode).zfill(3) + "-5?" in currentlink.lower() or "uncen-episode-" + str(episode).zfill(2) + "-5?" in currentlink.lower() or "episode-" + str(episode).zfill(3) + "-5-uncensored?" in currentlink.lower() or "episode-" + str(episode).zfill(2) + "-5-uncensored?" in currentlink.lower() or "episode-" + str(episode).zfill(3) + "-5-uncen?" in currentlink.lower() or "episode-" + str(episode).zfill(2) + "-5-uncen?" in currentlink.lower():
 
 
                     ############    "/uncensored-episode-" + str(episode).zfill(3) + "-5?" in currentlink.lower() or "/uncensored-episode-" + str(episode).zfill(2) + "-5?" in currentlink.lower() or "/episode-" + str(episode).zfill(3) + "-5-uncensored?" in currentlink.lower() or "/episode-" + str(episode).zfill(2) + "-5-uncensored?" in currentlink.lower():
@@ -140,7 +140,7 @@ class KissDownloader:
                     currentlink = link.get('href')
                     if currentlink is None:
                         pass
-                    elif "/episode-" + str(episode).zfill(3) + "-5?" in currentlink.lower() or "/episode-" + str(episode).zfill(2) + "-5?" in currentlink.lower():
+                    elif "episode-" + str(episode).zfill(3) + "-5?" in currentlink.lower() or "episode-" + str(episode).zfill(2) + "-5?" in currentlink.lower():
                         return ["http://" + site + "" + currentlink.lower(), False]
         return ["", False]
 
