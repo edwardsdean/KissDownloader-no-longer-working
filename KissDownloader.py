@@ -122,6 +122,13 @@ class KissDownloader:
                         pass
                     elif "episode-" + str(episode).zfill(3) + "?" in currentlink.lower() or "episode-" + str(episode).zfill(2) + "?" in currentlink.lower():
                         return ["http://" + site + "" + currentlink.lower(), False]
+                # weird urls
+                for link in soup.findAll('a'):
+                    currentlink = link.get('href')
+                    if currentlink is None:
+                        pass
+                    elif "episode-" + str(episode).zfill(3) + "-" in currentlink.lower() or "episode-" + str(episode).zfill(2) + "-" in currentlink.lower():
+                        return ["http://" + site + "" + currentlink.lower(), False]
             else:
                 ###for special episodes
                 episode = int(episode)
@@ -131,9 +138,6 @@ class KissDownloader:
                     if currentlink is None:
                         pass
                     elif "uncensored-episode-" + str(episode).zfill(3) + "-5?" in currentlink.lower() or "uncensored-episode-" + str(episode).zfill(2) + "-5?" in currentlink.lower() or "uncen-episode-" + str(episode).zfill(3) + "-5?" in currentlink.lower() or "uncen-episode-" + str(episode).zfill(2) + "-5?" in currentlink.lower() or "episode-" + str(episode).zfill(3) + "-5-uncensored?" in currentlink.lower() or "episode-" + str(episode).zfill(2) + "-5-uncensored?" in currentlink.lower() or "episode-" + str(episode).zfill(3) + "-5-uncen?" in currentlink.lower() or "episode-" + str(episode).zfill(2) + "-5-uncen?" in currentlink.lower():
-
-
-                    ############    "/uncensored-episode-" + str(episode).zfill(3) + "-5?" in currentlink.lower() or "/uncensored-episode-" + str(episode).zfill(2) + "-5?" in currentlink.lower() or "/episode-" + str(episode).zfill(3) + "-5-uncensored?" in currentlink.lower() or "/episode-" + str(episode).zfill(2) + "-5-uncensored?" in currentlink.lower():
                         return ["http://" + site + "" + currentlink.lower(), True]
                 # censored (normal) vvv
                 for link in soup.findAll('a'):
@@ -141,6 +145,13 @@ class KissDownloader:
                     if currentlink is None:
                         pass
                     elif "episode-" + str(episode).zfill(3) + "-5?" in currentlink.lower() or "episode-" + str(episode).zfill(2) + "-5?" in currentlink.lower():
+                        return ["http://" + site + "" + currentlink.lower(), False]
+                # weird urls
+                for link in soup.findAll('a'):
+                    currentlink = link.get('href')
+                    if currentlink is None:
+                        pass
+                    elif "episode-" + str(episode).zfill(3) + "-5" in currentlink.lower() or "episode-" + str(episode).zfill(2) + "-5" in currentlink.lower():
                         return ["http://" + site + "" + currentlink.lower(), False]
         return ["", False]
 
