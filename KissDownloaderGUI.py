@@ -116,10 +116,12 @@ class App(Frame):
             self.quality_select.set(show["quality"])
 
     def run_download(self):
-        if self.destination.get().endswith('\\'):
-            destination = self.destination.get() + self.title.get() + "\\"
+        destination_folder = self.destination.get().replace("\\", "/")
+
+        if destination_folder.endswith('/'):
+            destination = destination_folder + self.title.get() + "/"
         else:
-            destination = self.destination.get() + "\\" + self.title.get() + "\\"
+            destination = destination_folder + "/" + self.title.get() + "/"
         params = [self.user_name.get(), self.user_password.get(), self.title.get(), self.url.get(), str(self.season_num.get()), str(self.episode_min.get()), str(self.episode_max.get()), destination, self.quality_select.get(), self.site_select.get()]
         print(params)
         KissDownloader(params)
