@@ -2,8 +2,8 @@
 Downloads shows from Kissanime.to, Kisscartoon.me, Kissasian.com
 
 4th November Update
--now uses a hidden browser
--increased speed of getting urls for videos
+* now uses a hidden browser
+* increased speed of getting urls for videos
 
 
 **Installation**
