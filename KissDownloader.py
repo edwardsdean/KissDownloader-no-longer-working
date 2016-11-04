@@ -7,16 +7,13 @@ try:
 except ImportError:
     pip.main(['install', 'BeautifulSoup4'])
 try:
-    from selenium import webdriver
-    from selenium.common.exceptions import TimeoutException
-    from selenium.webdriver.common.keys import Keys
-except ImportError:
-    pip.main(['install', 'selenium'])
-try:
     import pySmartDL
 except ImportError:
     pip.main(['install', 'pySmartDL'])
-
+try:
+    import cfscrape
+except ImportError:
+    pip.main(['install', 'cfscrape'])
 
 
 
@@ -24,20 +21,17 @@ except ImportError:
 # TODO error management
 # TODO standalone package
 # TODO confirm a successful login
-# TODO add support for kisscartoon.com
 # TODO fancy logging
 # TODO edit config to keep track of downloaded episodes
 # TODO filename customization, with config
 # TODO a fancy gui
-# TODO us a hidden browser instead of firefox
-# TODO support for initialization of the Downloader class with arguments or a config file instead of get_params
 # TODO support for starting the script with command line args
 # TODO maybe build downloader as a module? idk man
 # TODO simultaneous downloads
 # TODO pause downloads
 # TODO get video src through video player to avoid the need to login and handle user data   - not possible to get 1080p this way
 # TODO support for queueing downloads, will be easy once configs/console launching is supported
-#TODO deal with reaching the end of a show
+# TODO deal with reaching the end of a show
 
 
 class KissDownloader:
@@ -45,34 +39,32 @@ class KissDownloader:
         for param in params:
             print(param)
         # create a webdriver instance with a lenient timeout duration
-        self.driver = webdriver.Firefox()
-        self.driver.set_page_load_timeout(100)
+        self.scraper = cfscrape.create_scraper()
         self.rootPage = ""
         self.file_extension = ""
         self.download(params)
 
     def login(self, user, pw, site):
         global config
-        # go to the site login page
-        self.driver.get("http://" + str(site) + "/Login")
+        # define login page
+        login_url = "http://" + str(site) + "/Login"
 
-        # wait for cloudflare to figure itself out
-        time.sleep(10)
+        #define user and pass
+        username = user
+        password = pw
 
-        # locate username and password fields in the login page
-        username = self.driver.find_element_by_id("username")
-        password = self.driver.find_element_by_id("password")
+        #define payload
+        payload = {
+            'username': username,
+            'password': password
+        }
 
-        # type login info into fields
-        username.send_keys(user)
-        password.send_keys(pw)
-
-        # send the filled out login form and wait
-        password.send_keys(Keys.RETURN)
-        time.sleep(5)
+        #login
+        self.scraper.get(login_url)
+        login = self.scraper.post(login_url, data=payload)
 
         # confirm that login was successful and return a bool
-        if self.driver.current_url == "https://" + site + "/login" or self.driver.current_url == "http://" + site + "/login":
+        if login.url == "https://" + site + "/login" or login.url == "http://" + site + "/login":
             return False
         else:
             return True
@@ -161,14 +153,14 @@ class KissDownloader:
         x = True
         while x:
             try:
-                self.driver.get(page)
+                page = self.scraper.get(page)
                 x = False
             # try again if the page times out
             except TimeoutException:
                 print("loading " + page + " timed out, trying again.")
-        time.sleep(10)
+        time.sleep(1)
 
-        currentpage = self.driver.page_source
+        currentpage = page.content
         soup = BeautifulSoup(currentpage, 'html.parser')
 
 # 16:9 vvv
@@ -217,14 +209,11 @@ class KissDownloader:
             #*epiode name* 0.38% done at 2.9 MB/s
             time.sleep(1)
         if obj.isFinished():
+            time.sleep(3)
             os.rename(location, path)
         else:
             print("Download of " + name + " failed")
         return path
-
-    def close(self):
-        # closes the browser window, may be used for other program-ending tasks later on
-        self.driver.close()
 
     def frange(self, start, stop, step):
         i = start
@@ -241,15 +230,16 @@ class KissDownloader:
 
         #p = [user, password, title, anime, season, episode_min, episode_max, destination, quality, site]
         # takes a list of parameters and uses them to download the show
+        print("Logging in Please Wait")
         l = self.login(p[0], p[1], p[9])  # 0 are the indices of the username and password from get_params()
         while not l:
             print("login failed, try again")
             l = self.login(p[0], p[1], p[9])
 
-        self.driver.get(p[3])  # 3 is the index of the url
-        time.sleep(10)
+        self.rootPage = self.scraper.get(p[3]).content  # 3 is the index of the url
+        time.sleep(3)
 
-        self.rootPage = self.driver.page_source
+
         print("Getting episode urls please wait")
         for e in self.frange(float(p[5]), int(p[6])+1, 0.5):  # 5 and 6 are episodes min and max
             page = self.get_episode_page(e, p[9])
@@ -275,7 +265,11 @@ class KissDownloader:
                     print("Got link for " + filename)
                     episode_list.append((video[0], filename, p[7]))
                 else: ("no link for episode " + str(e))
-        self.driver.close()
+        print(episode_list)
+        #logs url list
+        #f = open( 'log.txt', 'w' )
+        #f.write( str(episode_list) + '\n' )
+        f.close()
         for tuple in episode_list:
             url = tuple[0]
             filename = tuple[1]
@@ -288,3 +282,10 @@ class KissDownloader:
 if __name__ == "__main__":
     #params = [user, password, title, anime, season, episode_min, episode_max, destination, quality, site]
     print('please run from KissDownloaderGUI.py')
+    KissDownloader
+    episodes_list = []
+    for tup in episodes_list:
+        url = tup[0]
+        filename = tup[1]
+        destination = tup[2]
+        KissDownloader.download_video(KissDownloader, url, filename, destination)
