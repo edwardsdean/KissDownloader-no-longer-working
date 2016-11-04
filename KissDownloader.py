@@ -6,14 +6,17 @@ try:
     from bs4 import BeautifulSoup
 except ImportError:
     pip.main(['install', 'BeautifulSoup4'])
+    from bs4 import BeautifulSoup
 try:
     import pySmartDL
 except ImportError:
     pip.main(['install', 'pySmartDL'])
+    import pySmartDL
 try:
     import cfscrape
 except ImportError:
     pip.main(['install', 'cfscrape'])
+    import cfscrape
 
 
 
@@ -265,11 +268,12 @@ class KissDownloader:
                     print("Got link for " + filename)
                     episode_list.append((video[0], filename, p[7]))
                 else: ("no link for episode " + str(e))
-        print(episode_list)
+        #print(episode_list)
         #logs url list
         #f = open( 'log.txt', 'w' )
         #f.write( str(episode_list) + '\n' )
-        f.close()
+        #f.close()
+
         for tuple in episode_list:
             url = tuple[0]
             filename = tuple[1]
