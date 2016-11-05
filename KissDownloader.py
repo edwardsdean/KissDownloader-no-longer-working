@@ -3,6 +3,10 @@ import time
 import configparser
 import os
 try:
+    pip.main(['install', '--upgrade', 'pip'])
+except:
+    pass
+try:
     from bs4 import BeautifulSoup
 except ImportError:
     pip.main(['install', 'BeautifulSoup4'])
@@ -12,11 +16,14 @@ try:
 except ImportError:
     pip.main(['install', 'pySmartDL'])
     import pySmartDL
+
 try:
+    pip.main(['install', '--upgrade', 'cfscrape'])
     import cfscrape
-except ImportError:
+except:
     pip.main(['install', 'cfscrape'])
     import cfscrape
+
 
 
 
@@ -190,7 +197,7 @@ class KissDownloader:
             for link in soup.findAll('a', string="320x240.3pg"):
                 return [link.get('href'), ".3pg"]
         else:
-            return False
+            return ["false", ""]
 
     def download_video(self, url, name, destination):
         #makes sure the directory exists
@@ -252,7 +259,7 @@ class KissDownloader:
             else:
                 video = self.get_video_src(page[0], p[8]) #8 is the quality
                 # video = [url, file_extension]
-                if isinstance(video[0], str):
+                if video[0] != 'false':
                     if page[1]:  # if episode is called uncensored
                         if e % 1 == 0:
                             e = int(e)
@@ -267,7 +274,7 @@ class KissDownloader:
                             filename = p[2] + " S" + str(p[4].zfill(2)) + "E" + self.zpad(str(e), 3) + video[1]  # 2 is the title, 4 is the season
                     print("Got link for " + filename)
                     episode_list.append((video[0], filename, p[7]))
-                else: ("no link for episode " + str(e))
+                else: print("Unable to link for episode " + str(e) + " trying increasing the quality")
         #print(episode_list)
         #logs url list
         #f = open( 'log.txt', 'w' )
