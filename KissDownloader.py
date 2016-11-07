@@ -164,11 +164,12 @@ class KissDownloader:
         while x:
             try:
                 page = self.scraper.get(page)
+                #print(page.text)
                 x = False
             # try again if the page times out
             except TimeoutException:
                 print("loading " + page + " timed out, trying again.")
-        time.sleep(1)
+        time.sleep(3)
 
         currentpage = page.content
         soup = BeautifulSoup(currentpage, 'html.parser')
