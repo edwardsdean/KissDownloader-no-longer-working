@@ -205,7 +205,7 @@ class KissDownloader:
         try:
             os.stat(destination)
         except:
-            os.mkdir(destination)
+            os.makedirs(destination)
 
         filename = name
         path = destination + filename
