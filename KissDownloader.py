@@ -157,20 +157,29 @@ class KissDownloader:
                         return ["http://" + site + "" + currentlink.lower(), False]
         return ["", False]
 
-    def get_video_src(self, page, qual):
+    def get_video_src(self, episode_page, qual):
         # parses the video source link from the streaming page, currently chooses the highest available quality
 
         x = True
         while x:
             try:
-                page = self.scraper.get(page)
+                page = self.scraper.get(episode_page)
                 #print(page.text)
+                url = page.url
+                if "Special/AreYouHuman?" in str(url):
+                    print("please click url and prove your human")
+                    print(page.url)
+                    input("Press Enter to continue...")
+                    print("please wait for system to refresh")
+                    time.sleep(10)
                 x = False
             # try again if the page times out
-            except TimeoutException:
-                print("loading " + page + " timed out, trying again.")
-        time.sleep(3)
-
+            except:
+                print("loading " + episode_page + " timed out, trying again.")
+                time.sleep(5)
+        time.sleep(1)
+        #print("---")
+        #print(page.url)
         currentpage = page.content
         soup = BeautifulSoup(currentpage, 'html.parser')
 
@@ -247,6 +256,7 @@ class KissDownloader:
             print("login failed, try again")
             l = self.login(p[0], p[1], p[9])
 
+        time.sleep(3)
         self.rootPage = self.scraper.get(p[3]).content  # 3 is the index of the url
         time.sleep(3)
 
