@@ -50,9 +50,14 @@ class KissDownloader:
             print(param)
         # create a webdriver instance with a lenient timeout duration
         self.scraper = cfscrape.create_scraper()
+
         self.rootPage = ""
         self.file_extension = ""
+        self.debug_mode = False
+
         self.download(params)
+
+
 
     def login(self, user, pw, site):
         global config
@@ -73,8 +78,11 @@ class KissDownloader:
         self.scraper.get(login_url)
         login = self.scraper.post(login_url, data=payload)
 
+        if self.debug_mode:
+            print(login.url)
+
         # confirm that login was successful and return a bool
-        if login.url == "https://" + site + "/login" or login.url == "http://" + site + "/login":
+        if str(login.url).lower() == "https://" + site + "/login" or str(login.url).lower() == "http://" + site + "/login":
             return False
         else:
             return True
@@ -164,22 +172,23 @@ class KissDownloader:
         while x:
             try:
                 page = self.scraper.get(episode_page)
-                #print(page.text)
-                url = page.url
-                if "Special/AreYouHuman?" in str(url):
+                if self.debug_mode:
+                    print(page.url)
+                    print(page.text)
+                scraper_url = page.url
+                if "Special/AreYouHuman?" in str(scraper_url):
                     print("please click url and prove your human")
                     print(page.url)
                     input("Press Enter to continue...")
                     print("please wait for system to refresh")
                     time.sleep(10)
-                x = False
+                else:
+                    x = False
             # try again if the page times out
             except:
                 print("loading " + episode_page + " timed out, trying again.")
                 time.sleep(5)
         time.sleep(1)
-        #print("---")
-        #print(page.url)
         currentpage = page.content
         soup = BeautifulSoup(currentpage, 'html.parser')
 
@@ -248,13 +257,19 @@ class KissDownloader:
     def download(self, p):
         episode_list = []
 
+
         #p = [user, password, title, anime, season, episode_min, episode_max, destination, quality, site]
         # takes a list of parameters and uses them to download the show
         print("Logging in Please Wait")
         l = self.login(p[0], p[1], p[9])  # 0 are the indices of the username and password from get_params()
+        login_count = 0
         while not l:
+            if login_count > 3:
+                print("Login Failed")
+                break
             print("login failed, try again")
             l = self.login(p[0], p[1], p[9])
+            login_count = login_count + 1
 
         time.sleep(3)
         self.rootPage = self.scraper.get(p[3]).content  # 3 is the index of the url
@@ -263,6 +278,10 @@ class KissDownloader:
 
         print("Getting episode urls please wait")
         for e in self.frange(float(p[5]), int(p[6])+1, 0.5):  # 5 and 6 are episodes min and max
+            if self.debug_mode:
+                print("-----------------")
+                print("trying to get link for episode " + str(e))
+
             page = self.get_episode_page(e, p[9])
             # page = [page_url, isUncensored]
             if page[0] == "":
@@ -286,17 +305,24 @@ class KissDownloader:
                     print("Got link for " + filename)
                     episode_list.append((video[0], filename, p[7]))
                 else: print("Unable to link for episode " + str(e) + " trying increasing the quality")
-        #print(episode_list)
-        #logs url list
-        #f = open( 'log.txt', 'w' )
-        #f.write( str(episode_list) + '\n' )
-        #f.close()
+        if self.debug_mode:
+            print(episode_list)
+            #logs url list
+            f = open('log.txt', 'w')
+            f.write(str(episode_list) + '\n')
+            f.close()
+
 
         for tuple in episode_list:
             url = tuple[0]
             filename = tuple[1]
             destination = tuple[2]
-            self.download_video(url, filename, destination)
+            if self.debug_mode:
+                print("Download:")
+                print(filename, url, destination)
+                self.download_video(url, filename, destination)
+            else:
+                self.download_video(url, filename, destination)
             print("downloaded ", filename)
         print("done downloading " + p[2] + " Season " + p[4])
 
