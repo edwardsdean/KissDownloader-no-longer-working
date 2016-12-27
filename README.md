@@ -30,4 +30,4 @@ destination = /Users/HomeUser/Desktop/
 
 Note: This works best with your default player set to flash, and auto play turned off
 
-Thanks to [OneVoltTen](https://github.com/OneVoltTen) for help on getting some seird episodes fixed up
+Thanks to [OneVoltTen](https://github.com/OneVoltTen) for help on getting some weird episodes fixed up
