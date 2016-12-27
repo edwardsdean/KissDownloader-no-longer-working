@@ -139,6 +139,32 @@ class KissDownloader:
                         pass
                     elif "episode-" + str(episode).zfill(3) + "-" in currentlink.lower() or "episode-" + str(episode).zfill(2) + "-" in currentlink.lower():
                         return ["http://" + site + "" + currentlink.lower(), False]
+                # experimental urls
+                for link in soup.findAll('a'):
+                    currentlink = link.get('href')
+                    if currentlink is None:
+                        pass
+                    else:
+                        currentlinkx = currentlink.lower()
+                        episodex = 0
+                        # print(currentlink)
+                        if ("/anime/" in currentlinkx):
+                            currentlinkx = currentlinkx.replace("/anime/", "")
+                            animetitle = currentlinkx.split("/", 1)
+                            for item in animetitle:  # get last item
+                                episodexx = item
+                            if animetitle[0] + "-" in episodexx:
+                                episodex = episodexx.replace(animetitle[0] + "-", "")
+                                if self.debug_mode:
+                                    print("found [" + episodex + "]")
+                                episodex = episodex.split("-")[0]
+                        try:
+                            if (float(episodex) and float(episodex) > 0 and float(episodex) == float(episode)):
+                                return ["http://" + site + "" + currentlink.lower(), False]
+                            else:
+                                pass
+                        except ValueError:
+                            print("invalid episode")
             else:
                 ###for special episodes
                 episode = int(episode)
@@ -173,8 +199,9 @@ class KissDownloader:
             try:
                 page = self.scraper.get(episode_page)
                 if self.debug_mode:
-                    print(page.url)
-                    print(page.text)
+                    pass
+                    # print(page.url)
+                    # print(page.text)
                 scraper_url = page.url
                 if "Special/AreYouHuman?" in str(scraper_url):
                     print("please click url and prove your human")
