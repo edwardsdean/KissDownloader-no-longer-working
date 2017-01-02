@@ -271,24 +271,18 @@ class KissDownloader:
                 print(name + "\t " + str(float("{0:.2f}".format((float(obj.get_progress())*100)))) + "% done at " + pySmartDL.utils.sizeof_human(speed) + "/s, ETA: "+ obj.get_eta(human=True))
             #*epiode name* 0.38% done at 2.9 MB/s, ETA: 1 minutes, 12 seconds
             
-            # Pause downloader if speed drops below 200 kB/s
-            if speed <= 20000 and progress != 100:
-                print("Download rate low: Paused downloader.")
-                obj.pause()
-                time.sleep(5)
-                obj.unpause()
-            time.sleep(0.8)
+            time.sleep(1)
 
             # Provide feedback that multiple threads are rebuilding
             if progress == 100 and obj.get_eta() == 0:
-                print("Rebuilding threads, Please wait **", name)
+                print("Rebuilding threads, Please wait **")
                 time.sleep(2)
-                print("Rebuilding threads, Please wait ***", name)
+                print("Rebuilding threads, Please wait ***")
                 time.sleep(2)
         if obj.isFinished():
             # Made use of try: and except for os.rename
             try:
-                time.sleep(8)
+                time.sleep(3)
                 os.rename(location, path)
             except:
                 print("Download of " + name + " failed")
