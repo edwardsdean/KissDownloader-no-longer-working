@@ -2,6 +2,7 @@ import pip
 import time
 import configparser
 import os
+import webbrowser
 try:
     pip.main(['install', '--upgrade', 'pip'])
 except:
@@ -206,6 +207,8 @@ class KissDownloader:
                 if "Special/AreYouHuman?" in str(scraper_url):
                     print("please click url and prove your human")
                     print(page.url)
+                    # Auto opening of AreYouHuman? page
+                    webbrowser.open(page.url)
                     input("Press Enter to continue...")
                     print("please wait for system to refresh")
                     time.sleep(10)
@@ -257,18 +260,32 @@ class KissDownloader:
         obj = pySmartDL.SmartDL(url, destination, progress_bar=False, fix_urls=True)
         obj.start(blocking=False)
         location = obj.get_dest()
-
+        
         while True:
             if obj.isFinished():
                 break
-            print(name + "\t " + str(float("{0:.2f}".format((float(obj.get_progress())*100)))) + "% done at " + pySmartDL.utils.sizeof_human(obj.get_speed(human=False)) + "/s")
-            #*epiode name* 0.38% done at 2.9 MB/s
+            progress = obj.get_progress() * 100
+            speed = obj.get_speed(human=False)
+            # Added ETA to print print progress
+            if obj.get_eta() > 0 and progress < 100:
+                print(name + "\t " + str(float("{0:.2f}".format((float(obj.get_progress())*100)))) + "% done at " + pySmartDL.utils.sizeof_human(speed) + "/s, ETA: "+ obj.get_eta(human=True))
+            #*epiode name* 0.38% done at 2.9 MB/s, ETA: 1 minutes, 12 seconds
+            
             time.sleep(1)
+
+            # Provide feedback that multiple threads are rebuilding
+            if progress == 100 and obj.get_eta() == 0:
+                print("Rebuilding threads, Please wait **")
+                time.sleep(2)
+                print("Rebuilding threads, Please wait ***")
+                time.sleep(2)
         if obj.isFinished():
-            time.sleep(3)
-            os.rename(location, path)
-        else:
-            print("Download of " + name + " failed")
+            # Made use of try: and except for os.rename
+            try:
+                time.sleep(3)
+                os.rename(location, path)
+            except:
+                print("Download of " + name + " failed")
         return path
 
     def frange(self, start, stop, step):
