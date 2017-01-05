@@ -1,11 +1,19 @@
 # KissDownloader
-Downloads shows from Kissanime.ru, Kisscartoon.me, Kissasian.com
+Downloads shows from Kissanime.ru, Kisscartoon.se, Kissasian.com
 
+January 5th 2017 Update:
 
+-Reverted back to using a web browser(Chrome), this is to support KissCartoon and KissAsian
+
+-Fixed support for KissCartoon and KissAsian
 
 **Installation**
 
 * Install Python 3 [Download Here](https://www.python.org/downloads/) the latest one.
+
+* Download and copy [ChromeDriver](https://sites.google.com/a/chromium.org/chromedriver/) to location of script
+
+* Install [Chrome](https://www.google.com.au/chrome/browser/desktop/#eula)
 
 * Run UpdateModuals.py (may need to be run with admin/root privileges)
 

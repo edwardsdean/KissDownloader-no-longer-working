@@ -15,7 +15,7 @@ class App(Frame):
         self.site_select_label = Label(self, text="Select Site to download from: ").grid(row=1, column=1)
     # create a Combobox with site to choose from
     # currently not in effect
-        self.available_sites = ['kissanime.ru', 'kisscartoon.me', 'kissasian.com']
+        self.available_sites = ['kissanime.ru', 'kisscartoon.se', 'kissasian.com']
         self.site_select = Combobox(self, values=self.available_sites)
         self.site_select.grid(row=1, column=2, padx=32, pady=8)
     # create username label and field
