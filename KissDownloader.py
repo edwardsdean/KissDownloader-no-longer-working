@@ -224,9 +224,9 @@ class KissDownloader:
                 scraper_url = self.driver.current_url
                 if "Special/AreYouHuman?" in str(scraper_url):
                     print("please click url and prove your human")
-                    print(self.driver.page_source)
+                    print(self.driver.current_url)
                     # Auto opening of AreYouHuman? page
-                    webbrowser.open(self.driver.page_source)
+                    webbrowser.open(self.driver.current_url)
                     input("Press Enter to continue...")
                     print("please wait for system to refresh")
                     time.sleep(10)
