@@ -13,3 +13,7 @@ try:
     pip.main(['install', '--upgrade', 'cfscrape'])
 except:
     pip.main(['install', 'cfscrape'])
+try:
+    pip.main(['install', '--upgrade', 'selenium'])
+except:
+    pip.main(['install', 'selenium'])
