@@ -17,3 +17,7 @@ try:
     pip.main(['install', '--upgrade', 'selenium'])
 except:
     pip.main(['install', 'selenium'])
+try:
+    pip.main(['install', '--upgrade', 'youtube_dl'])
+except:
+    pip.main(['install', 'youtube_dl'])

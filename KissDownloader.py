@@ -1,3 +1,4 @@
+from __future__ import unicode_literals
 import pip
 import time
 import configparser
@@ -35,6 +36,13 @@ except ImportError:
     from selenium import webdriver
     from selenium.common.exceptions import TimeoutException
     from selenium.webdriver.common.keys import Keys
+try:
+    pip.main(['install', '--upgrade', 'youtube_dl'])
+    import youtube_dl
+except:
+    pip.main(['install', 'youtube_dl'])
+    import youtube_dl
+
 
 
 
@@ -263,6 +271,21 @@ class KissDownloader:
         elif qual in ["1920x1080.mp4", "1280x720.mp4", "640x360.mp4", "320x180.3pg", "960x720.mp4", "480x360.mp4", "320x240.3pg"] and soup.findAll('a', string="320x240.3pg") != []:
             for link in soup.findAll('a', string="320x240.3pg"):
                 return [link.get('href'), ".3pg"]
+        elif soup.find_all('a', string="CLICK HERE TO DOWNLOAD"):
+            for link in soup.find_all('a', string="CLICK HERE TO DOWNLOAD"):
+                ydl = youtube_dl.YoutubeDL({'outtmpl': '%(id)s%(ext)s'})
+                with ydl:
+                    result = ydl.extract_info(
+                        link.get('href'),
+                        download=False  # We just want to extract the info
+                    )
+                if 'entries' in result:
+                    # Can be a playlist or a list of videos
+                    video = result['entries'][0]
+                else:
+                    # Just a video
+                    video = result
+                return [video['url'], "."+video['ext']]
         else:
             return ["false", ""]
 
@@ -392,7 +415,7 @@ class KissDownloader:
 
 
 if __name__ == "__main__":
-    #params = [user, password, title, anime, season, episode_min, episode_max, destination, quality, site]
+    #params = [user, password, title, anime_base_url, anime, season, episode_min, episode_max, destination, quality, site]
     print('please run from KissDownloaderGUI.py')
     KissDownloader
     episodes_list = []

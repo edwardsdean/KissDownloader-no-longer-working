@@ -1,6 +1,8 @@
 # KissDownloader
 Downloads shows from Kissanime.ru, Kisscartoon.se, Kissasian.com
 
+Supports Kissanime and Openload video hosts
+
 January 5th 2017 Update:
 
 -Reverted back to using a web browser(Chrome), this is to support KissCartoon and KissAsian
@@ -20,7 +22,7 @@ January 5th 2017 Update:
 Installation is now done, to use the script run KissDownloaderGUI.py
 
 
--python modules use are; Beautifulsoup, cfscrape, pySmartDL, pip
+-python modules use are; Beautifulsoup, cfscrape, pySmartDL, pip, youtube_dl
 
 note: these modules should auto install if you have pip installed which is installed by default on python 3.4 and up on windows
 
