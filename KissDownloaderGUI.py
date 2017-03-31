@@ -4,9 +4,10 @@ from tkinter.ttk import *
 import tkinter.ttk as ttk
 import tkinter as tk
 from tkinter import StringVar
+import os
 import csv
 from collections import defaultdict
-import os
+
 
 if not os.path.exists(dir_path+'/resolved.csv'):
     open(dir_path+'/resolved.csv', 'a').close()
@@ -69,11 +70,11 @@ class StartPage(tk.Frame):
 
         if(int(demo_data) == 1):
             self.url.insert(0, "http://kissanime.ru/Anime/Re-Zero-kara-Hajimeru-Isekai-Seikatsu")
-            self.title.insert(0, "Re Zero")
+            self.title.insert(0, "Re_Zero")
             #self.episode_count.insert(0, "25")
             self.episode_min.insert(0, "0")
             self.episode_max.insert(0, "0")
-        self.quality_select.set("720p")
+        self.quality_select.set("1080p")
 
 
         Label(self, text="Once queued series: ").pack()

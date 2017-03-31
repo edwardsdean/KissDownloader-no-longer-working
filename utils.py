@@ -4,8 +4,17 @@ import configparser
 from time import strftime, gmtime
 
 class utils():
+    def uprint(*objects, sep=' ', end='\n', file=sys.stdout):
+        enc = file.encoding
+        if enc == 'UTF-8':
+            return (objects[0])
+        else:
+            f = lambda obj: str(obj).encode(enc, errors='backslashreplace').decode(enc)
+            return (objects[0])
+
     def log(message, **options):
         tty = sys.stdout.isatty()
+        message = utils.uprint(message)
         if tty:
             print(message, **options)
         try:
@@ -64,7 +73,15 @@ class utils():
             cfg.write(cf)
 
     def sanitize_filename(filename):
-        """
-        Removes characters that Windows CMD is unable to display
-        """
+        # Removes characters that Windows CMD is unable to display
         return ''.join([char for char in filename if char in '0123456789aâbcdefghiîjklmnopqrstuvwxyzAÂBCDEFGHIÎJKLMNOPQRSTUVWXYZ[](){}.,-_!?@&%*+#^~ '])
+
+    def resource_path(relative_path):
+        # Get absolute path to resource, works for dev and for PyInstaller
+        try:
+            # PyInstaller creates a temp folder and stores path in _MEIPASS
+            base_path = sys._MEIPASS
+        except Exception:
+            base_path = os.path.abspath(".")
+
+        return os.path.join(base_path, relative_path)

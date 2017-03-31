@@ -7,6 +7,7 @@ build.bat
 KissDownloader.spec
 KissDownloader.exe
 resolved.csv
+resolved.csv.new
 resolved.csv.trash
 *.trash
 chromedriver.exe

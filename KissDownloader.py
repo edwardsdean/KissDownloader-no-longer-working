@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import pip
 import sys
 import os
 import time
@@ -11,24 +12,48 @@ import re
 import socket
 import requests
 from pathlib import Path
-
 import threading
 from threading import Thread, Lock
 import queue as Queue
-
 import urllib
 import urllib.request as urllib2
 from urllib.request import urlretrieve
 from urllib.parse import urlparse
 
-import youtube_dl
-import pySmartDL
+try:
+    pip.main(['install', '--upgrade', 'BeautifulSoup4'])
+    from bs4 import BeautifulSoup
+except ImportError:
+    pip.main(['install', 'BeautifulSoup4'])
+    from bs4 import BeautifulSoup
 
-from bs4 import BeautifulSoup
-from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
-from selenium.common.exceptions import TimeoutException
-from selenium.webdriver.common.keys import Keys
+try:
+    pip.main(['install', '--upgrade', 'pySmartDL'])
+    import pySmartDL
+except ImportError:
+    pip.main(['install', 'pySmartDL'])
+    import pySmartDL
+
+try:
+    pip.main(['install', '--upgrade', 'pyopenload'])
+    import openload
+except ImportError:
+    pip.main(['install', 'pyopenload'])
+    import openload
+
+try:
+    pip.main(['install', '--upgrade', 'selenium'])
+    from selenium import webdriver
+    from selenium.webdriver.chrome.options import Options
+    from selenium.common.exceptions import TimeoutException
+    from selenium.webdriver.common.keys import Keys
+except ImportError:
+    pip.main(['install', 'selenium'])
+    from selenium import webdriver
+    from selenium.webdriver.chrome.options import Options
+    from selenium.common.exceptions import TimeoutException
+    from selenium.webdriver.common.keys import Keys
+
 
 from utils import *
 
@@ -38,7 +63,8 @@ from utils import *
 utils.log("== Starting up ==")
 utils.config = utils.read_settings()
 if not utils.config['DEFAULT']['username'] or not utils.config['DEFAULT']['userpassword']:
-    utils.log("Please provide username and password in the configuration file.")
+    utils.log("Configuration file located in: "+utils.get_config_path()+"\kissdownloader.ini")
+    utils.log("=E Please provide username and password in the configuration file.")
     sys.exit()
 else:
     username = utils.config['DEFAULT']['username']
@@ -53,8 +79,26 @@ if getattr(sys, 'frozen', False):
     dir_path = os.path.dirname(sys.executable)
 elif __file__:
     dir_path = os.path.dirname(__file__)
+    if not dir_path:
+        dir_path = os.path.dirname(os.path.realpath(__file__)) # fallback
+    if not dir_path:
+        utils.log("=E Unable to resolve dir_path")
+        sys.exit()
 
-randnum=str(randint(1, 100000)) # used to create random filename, should be revised
+# custom directory for files if executed from exe
+chromedriver = utils.resource_path("chromedriver.exe")
+ublock_origin = utils.resource_path("ublock_origin.crx")
+my_file = Path(chromedriver)
+my_file2 = Path(ublock_origin)
+if not my_file.is_file():
+    print('no chromedriver')
+    chromedriver = dir_path
+if my_file2.is_file():
+    print(ublock_origin)
+    dir_path_ublock_origin = ublock_origin
+else:
+    dir_path_ublock_origin = dir_path
+
 queue=Queue.Queue()
 count=0
 download_list=({})
@@ -108,12 +152,12 @@ class KissDownloader(threading.Thread):
                             del download_list[nestlist[0][3]] # remove
                         except Exception as e:
                             utils.log(e)
-                            utils.log("Error: unable to remove episode" + str(nestlist[0][3]))
+                            utils.log("=E Unable to remove episode" + str(nestlist[0][3]))
                         try:
                             shutil.move(nestlist[0][2] + "temp/" + nestlist[0][1], nestlist[0][2] + nestlist[0][1]) # move on download complete
                         except Exception as e:
                             utils.log(e)
-                            utils.log("Failed moving " + str(nestlist[0][2] + "temp/" + nestlist[0][1]) + " to " + str(nestlist[0][2] + nestlist[0][1]))
+                            utils.log("=E Failed moving " + str(nestlist[0][2] + "temp/" + nestlist[0][1]) + " to " + str(nestlist[0][2] + nestlist[0][1]))
                     utils.log("Completed" + str(episode))
                 count=count - 1
                 self.queue.task_done()
@@ -131,7 +175,7 @@ class KissDownloader(threading.Thread):
                         if sep == 0:
                             sep = 1
                             utils.log("\u2500\u2500\u2500\u2500\u2500\u2500") # ------
-                        utils.log(download_list[item]) # output download progress
+                        print(download_list[item]) # output download progress
                     else:
                         utils.log('Download starting...')
                     #print(str(item), ':', download_list[item])
@@ -143,7 +187,7 @@ class KissDownloader(threading.Thread):
         while (status == 503 and status != ""):
             req=requests.head(str(site))
             status=req.status_code
-            utils.log("status code: " + str(req.status_code))
+            utils.log("=E Status code: " + str(req.status_code))
             return status
             time.sleep(2)
 
@@ -163,11 +207,11 @@ class KissDownloader(threading.Thread):
                 time.sleep(2)
             except Exception as e:
                 utils.log(e)
-                utils.log("Error: login page not loaded (critical)")
+                utils.log("=E Login page not loaded (critical)")
                 return False
         except Exception as e:
             utils.log(e)
-            utils.log("Error: login failed")
+            utils.log("=E Login failed")
             time.sleep(4)
             return False
 
@@ -292,7 +336,7 @@ class KissDownloader(threading.Thread):
             resolution=int(resolution)
         except Exception as e:
             utils.log(e)
-            utils.log("Resolution error " + str(resolution))
+            utils.log("=E Resolution " + str(resolution))
             sys.exit()
 
         if(resolution >= 1080 or resolution == 0):
@@ -318,8 +362,44 @@ class KissDownloader(threading.Thread):
                 if(int(resolutionr) and int(resolutionr) >= 360 and int(resolutionr) <= 1080):
                     return [link.get('href'), ".mp4", resolutionr + "p"]
 
-        for link in soup.find_all('a', string="CLICK HERE TO DOWNLOAD"): # openload (experimental)
-            utils.log("openload not supported yet")
+        for link in soup.find_all('a', string="CLICK HERE TO DOWNLOAD"): # OpenLoad (experimental)
+            #utils.log(link.get('href'))
+            filekey = link.get('href').split("/")[4]  # https://openload.co/f/4bzx18-UkAk/%5BAsenshi%5D_Little_Witch_Academia_-_01_%5B6A9D1E5C%5D-r213-r735.1-r899-r332.mp4
+            if not filekey:
+                return ["false", "", ""]
+            utils.log("Retrieve OpenLoad source ["+str(filekey)+"]...")
+            try:
+                openload = OpenLoad('50efa3a3805ab8e4', 'Ms166gN3')
+                login_info = openload.account_info()
+                if not login_info['email']:
+                    utils.log("=E OpenLoad API connection failed")
+                    return ["false", "", ""]
+                utils.log("OpenLoad prepare download...") # TODO
+                download_data = openload.prepare_download(filekey)
+                if(download_data['ticket'] and download_data['captcha_url']):
+                    try:
+                        utils.log("OpenLoad get download link") # TODO
+                        download_url_data = openload.get_download_link(filekey, download_data['ticket'], download_data['captcha_url'])
+                        #print(download_url_data['name'])
+                        utils.log("Retrieve OpenLoad 6") # TODO
+                        if download_url_data['url']: # TODO status code
+                            print(download_url_data['url'])
+                            try: # check network connection
+                                utils.log("Retrieve OpenLoad 7") # TODO
+                                socket.create_connection((download_url_data['url'], 80))
+                                return [download_url_data['url'], ".mp4", "720p"]
+                            except OSError:
+                                utils.log("=E OpenLoad failed to resolve")
+                        else:
+                            utils.log("=E OpenLoad unable to find file")
+                    except Exception as e:
+                        utils.log(e)
+                        utils.log("=E OpenLoad API call failed")
+            except Exception as e:
+                utils.log(e)
+                utils.log("=E OpenLoad connection failed")
+                return ["false", "", ""]
+            utils.log("Retrieve OpenLoad 2") # TODO
 
         return ["false", "", ""]
 
@@ -331,7 +411,7 @@ class KissDownloader(threading.Thread):
                 i += step
         except Exception as e:
             utils.log(e)
-            utils.log("frange error")
+            utils.log("=E Frange")
 
     def zpad(self, val, n):
         try:
@@ -339,7 +419,7 @@ class KissDownloader(threading.Thread):
             return "%s.%s" % (bits[0].zfill(n), bits[1])
         except Exception as e:
             utils.log(e)
-            utils.log("zpad error")
+            utils.log("=E Zpad")
 
     def download(self, p):
         global count
@@ -394,20 +474,22 @@ class KissDownloader(threading.Thread):
         if(int(ecount) < maxretrieve):
             extension=webdriver.ChromeOptions()
             try:
-                extension.add_extension(dir_path + "/extension/ublock_origin.crx")
+                extension.add_extension(dir_path_ublock_origin)
             except OSError as e:
                 utils.log(e)
-                utils.log("Error loading extension")
+                utils.log("=E Loading extension")
+            #extension.binary_location = dir_path_chromedriver # TODO resolve error (chrome not reachable)
             extension.add_argument('--dns-prefetch-disable')
             #prefs = {"profile.managed_default_content_settings.images":2}
             #extension.add_experimental_option("prefs",prefs)
-            self.driver=webdriver.Chrome(chrome_options=extension)
+
+            self.driver=webdriver.Chrome(chromedriver, chrome_options=extension)
             self.driver.set_page_load_timeout(50)
             l = True
             while l:
                 l=self.login(p[0], p[1], p[8])
                 if not l:
-                    utils.log("Login failed... try again")
+                    utils.log("=E Login failed... try again")
                 else:
                     l = False
         k=True
@@ -420,10 +502,10 @@ class KissDownloader(threading.Thread):
             except Exception as e:
                 utils.log(e)
                 time.sleep(2)
-                utils.log("Error loading page")
+                utils.log("=E Loading page")
 
         if (int(ecount) < (int(p[4]) + 1)):
-            utils.log("Retrieve from " + str(epcount) + " of " + str(p[4]))
+            utils.log("Retrieve from " + str(epcount)) # + " of " + str(p[4])
 
             for e in self.frange(float(epcount), int(maxretrieve), 0.5):
                 if(int(ecount) < int(download_threads) * 3 and int(ecount) < int(maxretrieve)):
@@ -455,7 +537,7 @@ class KissDownloader(threading.Thread):
                                     e=str(varxx[-5:]).zfill(2)
                             except Exception as e:
                                 utils.log(e)
-                                utils.log("Error: hyphen")
+                                utils.log("=E Hyphen")
 
                             if page[1]: # uncensored
                                 filename=prefix2 + p[2] + "_-_" + str(e) + "_" + video[2] + "_BD" + KA + video[1]
@@ -467,7 +549,7 @@ class KissDownloader(threading.Thread):
 
                             queue.put(video[0]) # append video url to queue
                         else:
-                            utils.log("Retrieve failed [" + str(e) + "]")
+                            utils.log("=E Retrieve failed [" + str(e) + "]")
                 else:
                     utils.log("Queue limit reached (" + str(int(download_threads) * 3) + ")")
                     break
@@ -494,7 +576,7 @@ class KissDownloader(threading.Thread):
                         utils.log("> " + str(count) + " remain")
                         last_count=count
         except KeyboardInterrupt:
-            utils.log("keyboard interrupt") # TODO proper thread exit logic
+            utils.log("=E Keyboard interrupt") # TODO proper thread exit logic
             sys.exit()
         except Exception as e:
             utils.log(e)
@@ -504,7 +586,7 @@ class KissDownloader(threading.Thread):
                 os.remove(dir_path + "/resolved.csv.trash")
             except FileNotFoundError as e:
                 pass
-            os.rename(dir_path + "/temp/resolved" + randnum + ".csv", dir_path + "/resolved.csv.trash")
+            os.rename(dir_path + "/resolved.csv", dir_path + "/resolved.csv.trash")
             KissDownloader.init()
         else:
             utils.log("Download finished!")
@@ -520,38 +602,36 @@ class KissDownloader(threading.Thread):
                         if files.endswith('.mp4'):
                             shutil.move(os.path.join(finaldestination, files), os.path.join(complete_dir, files))
                     try:
-                        os.rmdir(finaldestination + "/temp")
                         os.rmdir(finaldestination)
                     except Exception as e:
                         utils.log(e)
                         utils.log("Folder delete failed")
                 else:
                     if(len(file_count) <= 1):
-                        utils.log("Download failed!")
-                        os.rmdir(finaldestination + "/temp")
+                        utils.log("=E Download failed!")
                         os.rmdir(finaldestination)
                     else:
-                        utils.log("Invalid filecount!")
+                        utils.log("=E Invalid filecount!")
 
             os.remove(dir_path + "/resolved.csv")
-            os.rename(dir_path + "/temp/resolved" + randnum + ".csv", dir_path + "/resolved.csv")
+            os.rename(dir_path + "/resolved.csv.new", dir_path + "/resolved.csv")
 
             KissDownloader.init()
 
     def read_config():
         global destination_folder
 
-        if os.path.exists(dir_path + "/temp"):
-            shutil.rmtree(dir_path + "/temp")
-        os.mkdir(dir_path + "/temp")
+        resolvednew = Path(dir_path + "/resolved.csv.new")
+        if resolvednew.is_file():
+            os.remove(dir_path + "/resolved.csv.new")
 
         resolved = Path(dir_path + "/resolved.csv")
         if not resolved.is_file():
-            utils.log('Error: no series queued to download!')
+            utils.log('=E No series queued to download!')
             sys.exit()
 
         reader=csv.reader(open(dir_path + "/resolved.csv", "r"), delimiter=",")
-        newfile=open(dir_path + "/temp/resolved" + randnum + ".csv", "a")
+        newfile=open(dir_path + "/resolved.csv.new", "a")
         writer=csv.writer(newfile)
         br=0
         for row in reader:
@@ -561,17 +641,17 @@ class KissDownloader(threading.Thread):
                         if row[0]:
                             title=row[0]
                         else:
-                            utils.log("Error reading title")
+                            utils.log("=E Reading title")
                             sys.exit()
                         if row[1]:
                             url=row[1]
                         else:
-                            utils.log("Error reading url")
+                            utils.log("=E Reading url")
                             sys.exit()
                         if row[2]:
                             episode_count=row[2]
                         else:
-                            utils.log("Error reading episode_count")
+                            utils.log("=E Reading episode_count")
                             sys.exit()
                         mal=row[3]
                         if(int(row[4]) > 0):
@@ -595,10 +675,10 @@ class KissDownloader(threading.Thread):
                         writer.writerows([row])
             except IndexError as e:
                 utils.log(e)
-                utils.log("IndexError")
+                utils.log("=E Reading index")
             except Exception as e:
                 utils.log(e)
-                utils.log("Exception reading resolved.csv")
+                utils.log("=E Reading resolved.csv")
         # writer.writerows([newrow])
 
         newfile.close()
@@ -617,7 +697,7 @@ class KissDownloader(threading.Thread):
             title=title.rstrip('_') # remove last underscore
         except Exception as e:
             utils.log(e)
-            utils.log("Critical error renaming title")
+            utils.log("=E Renaming title")
             sys.exit()
         utils.log('Initiate... [' + str(title) + ']')
 
@@ -640,7 +720,7 @@ class KissDownloader(threading.Thread):
             return website, username, userpassword, title, url, mal, episode_min, episode_count, destination_folder, episode_max, resolution
         except UnboundLocalError as e:
             utils.log(e)
-            utils.log("Critical error reading resolved.csv in " + dir_path)
+            utils.log("=E Reading resolved.csv in " + dir_path)
             sys.exit()
         except Exception as e:
             utils.log(e)
@@ -664,7 +744,7 @@ class KissDownloader(threading.Thread):
         try: # check network connection
             socket.create_connection(("www.google.com", 80))
         except OSError:
-            utils.log("Unable to connect to network :(")
+            utils.log("=E Network connection failed")
             sys.exit()
 
         # 0 website, 1 username,2 userpassword, 3 title, 4 url, 5 mal, 6 episode_min, 7 episode_count, 8 destination, 9 episode_max, 10 resolution
