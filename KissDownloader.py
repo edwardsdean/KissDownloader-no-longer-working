@@ -4,9 +4,6 @@ import sys
 import os
 import time
 import glob
-import shutil
-import random
-from random import randint
 import csv
 import re
 import socket
@@ -54,13 +51,15 @@ except ImportError:
     from selenium.common.exceptions import TimeoutException
     from selenium.webdriver.common.keys import Keys
 
-
 from utils import *
 
-# TODO Fix min episode
-# TODO Revise get_episode logic, support non-standard naming schema
+# TODO Openload logic
+# TODO Beta logic
+# TODO Fix min episode logic
 
 utils.log("== Starting up ==")
+
+# read kissdownloader.ini
 utils.config = utils.read_settings()
 if not utils.config['DEFAULT']['username'] or not utils.config['DEFAULT']['userpassword']:
     utils.log("Configuration file located in: "+utils.get_config_path()+"\kissdownloader.ini")
@@ -75,6 +74,7 @@ else:
     complete_dir = utils.config['OTHER']['complete_dir']
     demo_data = utils.config['OTHER']['demo_data']
 
+# get current directory path
 if getattr(sys, 'frozen', False):
     dir_path = os.path.dirname(sys.executable)
 elif __file__:
@@ -85,19 +85,20 @@ elif __file__:
         utils.log("=E Unable to resolve dir_path")
         sys.exit()
 
-# custom directory for files if executed from exe
+# exe logic
 chromedriver = utils.resource_path("chromedriver.exe")
 ublock_origin = utils.resource_path("ublock_origin.crx")
 my_file = Path(chromedriver)
 my_file2 = Path(ublock_origin)
 if not my_file.is_file():
-    print('no chromedriver')
     chromedriver = dir_path
 if my_file2.is_file():
-    print(ublock_origin)
     dir_path_ublock_origin = ublock_origin
 else:
     dir_path_ublock_origin = dir_path
+
+if not os.path.exists(dir_path+'/resolved.csv'):
+    open(dir_path+'/resolved.csv', 'a').close()
 
 queue=Queue.Queue()
 count=0
@@ -154,7 +155,7 @@ class KissDownloader(threading.Thread):
                             utils.log(e)
                             utils.log("=E Unable to remove episode" + str(nestlist[0][3]))
                         try:
-                            shutil.move(nestlist[0][2] + "temp/" + nestlist[0][1], nestlist[0][2] + nestlist[0][1]) # move on download complete
+                            os.rename(nestlist[0][2] + "temp/" + nestlist[0][1], nestlist[0][2] + nestlist[0][1]) # move on download complete
                         except Exception as e:
                             utils.log(e)
                             utils.log("=E Failed moving " + str(nestlist[0][2] + "temp/" + nestlist[0][1]) + " to " + str(nestlist[0][2] + nestlist[0][1]))
@@ -600,7 +601,7 @@ class KissDownloader(threading.Thread):
                 if(len(file_count) >= int(p[4])-1):
                     for files in os.listdir(finaldestination):
                         if files.endswith('.mp4'):
-                            shutil.move(os.path.join(finaldestination, files), os.path.join(complete_dir, files))
+                            os.rename(os.path.join(finaldestination, files), os.path.join(complete_dir, files))
                     try:
                         os.rmdir(finaldestination)
                     except Exception as e:

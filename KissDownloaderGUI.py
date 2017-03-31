@@ -3,14 +3,9 @@ from KissDownloader import *
 from tkinter.ttk import *
 import tkinter.ttk as ttk
 import tkinter as tk
-from tkinter import StringVar
 import os
 import csv
 from collections import defaultdict
-
-
-if not os.path.exists(dir_path+'/resolved.csv'):
-    open(dir_path+'/resolved.csv', 'a').close()
 
 class OneVoltTen(tk.Tk):
     def __init__(self, *args, **kwargs):
@@ -158,37 +153,3 @@ class PageOne(tk.Frame):
 
 app = OneVoltTen()
 app.mainloop()
-
-class KissDownloadGUI(tk.Tk): # TODO
-    def __init__(self, *args, **kwargs):
-        tk.Tk.__init__(self, *args, **kwargs)
-        self.container = tk.Frame(self)
-        self.container.pack(side="top", fill="both", expand = True)
-        self.container.grid_rowconfigure(0, weight=1)
-        self.container.grid_columnconfigure(0, weight=1)
-
-        self.v = tk.StringVar()
-        Label(self.container, textvariable=self.v).pack()
-
-        self.v.set("New Text!")
-
-        self.container.mainloop()
-
-    def update(self):
-        global count
-        global download_prog
-        global download_list
-        download_prog=False
-
-        while(download_prog==False): # one instance
-            print(1, count)
-            while count > 0:
-                print(2, count)
-                for item in download_list:
-                    print(download_list[item]) # output download progress
-                    self.v.set(download_list[item])
-                time.sleep(1)
-            download_prog=True
-
-    def destroy(self):
-        self.container.destroy()
