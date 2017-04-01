@@ -2,7 +2,7 @@
 Downloads shows from Kissanime.ru, Kisscartoon.se, Kissasian.com
 
 **Windows release**
-Windows users can download the [Windows release](https://github.com/edwardsdean/KissDownloader/releases), which requires no setup.
+* Windows users can download the [Windows release](https://github.com/edwardsdean/KissDownloader/releases), which requires no setup.
 
 **Setup**
 
