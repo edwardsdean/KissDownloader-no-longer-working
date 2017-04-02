@@ -21,8 +21,20 @@ from urllib.parse import urlparse
 from utils import *
 
 if getattr(sys, 'frozen', False):
-    utils.slog("Release: Windows")
+    utils.slog("Release: " +  platform.system() + " " + platform.release())
     dir_path = os.path.dirname(sys.executable)
+
+    chromedriver = utils.resource_path("chromedriver.exe")
+    chromedriver_path = Path(chromedriver)
+    if not chromedriver_path.is_file():
+        utils.log("=E Chromedriver not found")
+        sys.exit()
+
+    ublock_origin = utils.resource_path("ublock_origin.crx")
+    ublock_origin_path = Path(ublock_origin)
+    if not ublock_origin_path.is_file():
+        utils.log("=E ublock_origin.crx not found")
+        sys.exit()
 
     import pySmartDL
     from bs4 import BeautifulSoup
@@ -35,11 +47,19 @@ if getattr(sys, 'frozen', False):
 elif __file__:
     utils.slog("Release: Python")
     dir_path = os.path.dirname(__file__)
+    if platform.system() == "Windows":
+        chromedriver = dir_path + "/chromedriver.exe"
+    else: # not tested
+        chromedriver = dir_path + "/chromedriver"
+    ublock_origin = dir_path + "/ublock_origin.crx"
+    print(ublock_origin)
+
     if not dir_path:
         dir_path = os.path.dirname(os.path.realpath(__file__)) # fallback
     if not dir_path:
         utils.log("=E Unable to resolve dir_path")
         sys.exit()
+
     # install requires modules
     try:
         pip.main(['install', '--upgrade', 'pySmartDL'])
@@ -96,18 +116,6 @@ else:
     download_threads = utils.config['OTHER']['download_threads']
     complete_dir = utils.config['OTHER']['complete_dir']
     demo_data = utils.config['OTHER']['demo_data']
-
-# exe logic
-chromedriver = utils.resource_path("chromedriver.exe")
-ublock_origin = utils.resource_path("ublock_origin.crx")
-my_file = Path(chromedriver)
-my_file2 = Path(ublock_origin)
-if not my_file.is_file():
-    chromedriver = dir_path
-if my_file2.is_file():
-    dir_path_ublock_origin = ublock_origin
-else:
-    dir_path_ublock_origin = dir_path
 
 if not os.path.exists(dir_path+'/resolved.csv'):
     open(dir_path+'/resolved.csv', 'a').close()
@@ -457,7 +465,7 @@ class KissDownloader(threading.Thread):
 
         if(int(ecount) < maxretrieve):
             extension=webdriver.ChromeOptions()
-            extension.add_extension(dir_path_ublock_origin)
+            extension.add_extension(ublock_origin)
             extension.add_argument('--dns-prefetch-disable')
             #prefs = {"profile.managed_default_content_settings.images":2}
             #extension.add_experimental_option("prefs",prefs)

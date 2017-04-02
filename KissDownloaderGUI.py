@@ -4,11 +4,13 @@ import tkinter as tk
 import os
 import csv
 from collections import defaultdict
+from utils import *
 
 try:
     from KissDownloader import *
 except Exception as e:
-    print(e)
+    utils.log(e)
+    utils.log("=E Critical error KissDownloader.py")
 
 class OneVoltTen(tk.Tk):
     def __init__(self, *args, **kwargs):
@@ -152,7 +154,12 @@ class PageOne(tk.Frame):
 
     def initiate(self):
         self.controller.destroy()
-        KissDownloader.init()
+
+        try:
+            KissDownloader.init()
+        except Exception as e:
+            utils.log(e)
+            utils.log("=E Critical error KissDownloader.py")
 
 app = OneVoltTen()
 app.mainloop()
