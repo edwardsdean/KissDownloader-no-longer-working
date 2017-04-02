@@ -1,43 +1,17 @@
 # KissDownloader
 Downloads shows from Kissanime.ru, Kisscartoon.se, Kissasian.com
 
-Supports Kissanime and Openload video hosts
+**Windows release**
+* Windows users can download the [Windows release](https://github.com/edwardsdean/KissDownloader/releases), which requires no setup.
 
-January 5th 2017 Update:
+**Setup**
 
--Reverted back to using a web browser(Chrome), this is to support KissCartoon and KissAsian
+* Install Python 3 [Download Here](https://www.python.org/downloads/), Windows users be sure to tick 'Add Python to PATH' when installing.
 
--Fixed support for KissCartoon and KissAsian
+* Download and copy [ChromeDriver](https://sites.google.com/a/chromium.org/chromedriver/) to the script location
 
-**Installation**
-
-* Install Python 3 [Download Here](https://www.python.org/downloads/) the latest one.
-
-* Download and copy [ChromeDriver](https://sites.google.com/a/chromium.org/chromedriver/) to location of script
-
-* Install [Chrome](https://www.google.com.au/chrome/browser/desktop/#eula)
-
-* Run UpdateModuals.py (may need to be run with admin/root privileges)
+* When first running you may need to be run with admin/root privileges to install the required modules
 
 Installation is now done, to use the script run KissDownloaderGUI.py
 
-
--python modules use are; Beautifulsoup, cfscrape, pySmartDL, pip, youtube_dl
-
-note: these modules should auto install if you have pip installed which is installed by default on python 3.4 and up on windows
-
-
-
-The script should work all all platforms however i am only able to test on windows.
-
-
-
-
-For Mac users change the config file destination to look like 
-```
-destination = /Users/HomeUser/Desktop/
-```
-
-Note: This works best with your default player set to flash, and auto play turned off
-
-Thanks to [OneVoltTen](https://github.com/OneVoltTen) for help on getting some weird episodes fixed up
+The python script should work all all major platforms.
