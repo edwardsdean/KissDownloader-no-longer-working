@@ -1,11 +1,14 @@
-from KissDownloader import *
-
 from tkinter.ttk import *
 import tkinter.ttk as ttk
 import tkinter as tk
 import os
 import csv
 from collections import defaultdict
+
+try:
+    from KissDownloader import *
+except Exception as e:
+    print(e)
 
 class OneVoltTen(tk.Tk):
     def __init__(self, *args, **kwargs):

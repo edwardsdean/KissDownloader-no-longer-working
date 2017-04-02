@@ -2,21 +2,23 @@ import sys
 import os
 import configparser
 from time import strftime, gmtime
+import logging
 
 class utils():
-    def uprint(*objects, sep=' ', end='\n', file=sys.stdout):
-        enc = file.encoding
-        if enc == 'UTF-8':
-            return (objects[0])
-        else:
-            f = lambda obj: str(obj).encode(enc, errors='backslashreplace').decode(enc)
-            return (objects[0])
 
     def log(message, **options):
         tty = sys.stdout.isatty()
-        message = utils.uprint(message)
         if tty:
             print(message, **options)
+        try:
+            with open('kissdownloader.log', 'a') as f:
+                current_time = strftime("%Y-%m-%d %H:%M:%S UTC", gmtime())
+                f.write("%s\t%s\n" % (current_time, message))
+        except Exception as e:
+            utils.log(e)
+            utils.log("=E Could not write to the log file")
+
+    def slog(message):
         try:
             with open('kissdownloader.log', 'a') as f:
                 current_time = strftime("%Y-%m-%d %H:%M:%S UTC", gmtime())
