@@ -38,7 +38,6 @@ if getattr(sys, 'frozen', False):
 
     import pySmartDL
     from bs4 import BeautifulSoup
-    from openload import OpenLoad
     from selenium import webdriver
     from selenium.webdriver.chrome.options import Options
     from selenium.common.exceptions import TimeoutException
@@ -47,12 +46,23 @@ if getattr(sys, 'frozen', False):
 elif __file__:
     utils.slog("Release: Python")
     dir_path = os.path.dirname(__file__)
+
     if platform.system() == "Windows":
         chromedriver = dir_path + "/chromedriver.exe"
-    else: # not tested
+
+    if platform.system() == "Mac":
         chromedriver = dir_path + "/chromedriver"
+
+    if platform.system() == "Linux":
+        chromedriver = dir_path + "/chromedriver"
+    
+    chromedriver_path = Path(chromedriver)
+    if not chromedriver_path.is_file():
+        utils.log("=E Chromedriver not found")
+        utils.log("Download chromedriver: http://chromedriver.storage.googleapis.com/index.html?path=2.9/")
+        utils.log("Extract 'chromedriver' to this scripts folder")
+        sys.exit()
     ublock_origin = dir_path + "/ublock_origin.crx"
-    print(ublock_origin)
 
     if not dir_path:
         dir_path = os.path.dirname(os.path.realpath(__file__)) # fallback
@@ -74,13 +84,6 @@ elif __file__:
     except ImportError:
         pip.main(['install', 'BeautifulSoup4'])
         from bs4 import BeautifulSoup
-
-    try:
-        pip.main(['install', '--upgrade', 'pyopenload'])
-        from openload import OpenLoad
-    except ImportError:
-        pip.main(['install', 'pyopenload'])
-        from openload import OpenLoad
 
     try:
         pip.main(['install', '--upgrade', 'selenium'])
