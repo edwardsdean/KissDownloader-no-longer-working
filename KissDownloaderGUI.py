@@ -1,10 +1,20 @@
+import platform
+from utils import *
+try:
+    import tkinter as tk
+except Exception as e:
+    utils.log(e)
+    if platform.system() == "Linux":
+        utils.log("Linux systems require installing the tk package")
+        utils.log("Ubuntu: sudo apt-get install python-tk")
+        utils.log("Arch Linux: sudo pacman -S tk")
+    else:
+        utils.log("=E Tkinter not found in python (requires python 3.1+)")
 from tkinter.ttk import *
 import tkinter.ttk as ttk
-import tkinter as tk
 import os
 import csv
 from collections import defaultdict
-from utils import *
 
 try:
     from KissDownloader import *
