@@ -20,6 +20,13 @@ from urllib.parse import urlparse
 
 from utils import *
 
+try:
+    pip.main(['install', '--upgrade', 'youtube_dl'])
+    import youtube_dl
+except:
+    pip.main(['install', 'youtube_dl'])
+    import youtube_dl # TODO
+
 if getattr(sys, 'frozen', False):
     utils.slog("Release: " +  platform.system() + " " + platform.release())
     dir_path = os.path.dirname(sys.executable)
@@ -46,6 +53,11 @@ if getattr(sys, 'frozen', False):
 elif __file__:
     utils.slog("Release: Python")
     dir_path = os.path.dirname(__file__)
+    if not dir_path:
+        dir_path = os.path.dirname(os.path.realpath(__file__)) # fallback
+    if not dir_path:
+        utils.log("=E Unable to resolve dir_path")
+        sys.exit()
 
     if platform.system() == "Windows":
         chromedriver = dir_path + "/chromedriver.exe"
@@ -55,20 +67,12 @@ elif __file__:
 
     if platform.system() == "Linux":
         chromedriver = dir_path + "/chromedriver"
-    
+
     chromedriver_path = Path(chromedriver)
     if not chromedriver_path.is_file():
-        utils.log("=E Chromedriver not found")
-        utils.log("Download chromedriver: http://chromedriver.storage.googleapis.com/index.html?path=2.9/")
-        utils.log("Extract 'chromedriver' to this scripts folder")
+        utils.log("=E Chromedriver not found http://chromedriver.storage.googleapis.com/index.html?path=2.9/")
         sys.exit()
     ublock_origin = dir_path + "/ublock_origin.crx"
-
-    if not dir_path:
-        dir_path = os.path.dirname(os.path.realpath(__file__)) # fallback
-    if not dir_path:
-        utils.log("=E Unable to resolve dir_path")
-        sys.exit()
 
     # install requires modules
     try:
@@ -98,7 +102,6 @@ elif __file__:
         from selenium.common.exceptions import TimeoutException
         from selenium.webdriver.common.keys import Keys
 
-# TODO Openload logic
 # TODO Beta logic
 
 utils.log("== Starting up ==")
@@ -155,7 +158,8 @@ class KissDownloader(threading.Thread):
                     #location=obj.get_dest()
                     try:
                         obj=pySmartDL.SmartDL(str(host).replace(" ","%20"), nestlist[0][2] + "temp/" + nestlist[0][1], progress_bar=False, fix_urls=True)
-                        obj.headers = nestlist[0][4]
+                        if nestlist[0][4]:
+                            obj.headers = nestlist[0][4]
                         obj.start(blocking=False)
                         while True:
                             if obj.isFinished():
@@ -375,27 +379,40 @@ class KissDownloader(threading.Thread):
         if(resolution >= 1080 or resolution == 0):
             teneighty=pattern=re.compile(r'x1080.mp4')
             for link in soup.findAll('a', text=teneighty):
-                return [link.get('href'), ".mp4", "1080p"]
+                return [link.get('href'), ".mp4", "1080p", ""]
         if(resolution >= 720 or resolution == 0):
             seventwenty=pattern=re.compile(r'x720.mp4')
             for link in soup.findAll('a', text=seventwenty):
-                return [link.get('href'), ".mp4", "720p"]
+                return [link.get('href'), ".mp4", "720p", ""]
         if(resolution >= 480 or resolution == 0):
             foureighty=pattern=re.compile(r'x480.mp4')
             for link in soup.findAll('a', text=foureighty):
-                return [link.get('href'), ".mp4", "480p"]
+                return [link.get('href'), ".mp4", "480p", ""]
         if(resolution >= 360 or resolution == 0):
             threesixty=pattern=re.compile(r'x360.mp4')
             for link in soup.findAll('a', text=threesixty):
-                return [link.get('href'), ".mp4", "360p"]
+                return [link.get('href'), ".mp4", "360p", ""]
         if(resolution >= 0): # fallback
             finalcheck=pattern=re.compile(r'.mp4')
             for link in soup.findAll('a', text=finalcheck):
                 resolutionr=str(link).rsplit('.mp4')[0][-3:]
                 if(int(resolutionr) and int(resolutionr) >= 360 and int(resolutionr) <= 1080):
-                    return [link.get('href'), ".mp4", resolutionr + "p"]
+                    return [link.get('href'), ".mp4", resolutionr + "p", ""]
 
-        # openload not supported
+        # openload
+        for link in soup.find_all('iframe'):
+            if "openload" in link.get('src'):
+                utils.log(link.get('src'))
+                ydl=youtube_dl.YoutubeDL({'outtmpl': '%(id)s%(ext)s'})
+                result=ydl.extract_info(link.get('src'), download=False) # extract info
+                try:
+                    if "entries" in result:
+                        video=result['entries'][0] # playlist
+                    else:
+                        video=result # single
+                except IndexError:
+                    video=result # single
+                return [video['url'],  "."+video['ext'], "720p", ""]
 
         # beta server
         try:
@@ -406,7 +423,7 @@ class KissDownloader(threading.Thread):
         except:
             pass
 
-        return ["false", "", ""]
+        return ["false", "", "", ""]
 
     def frange(self, start, stop, step):
         try:
@@ -512,7 +529,7 @@ class KissDownloader(threading.Thread):
                     time.sleep(2)
                     page=self.get_episode_page(e, p[8])
                     if page[0] == "":
-                        print('Reading page episodes...')
+                        print('Unable to find episode ' + str(e) + '...')
                         pass
                     else:
                         video=self.get_video_src(page[0], p[10])
@@ -545,7 +562,7 @@ class KissDownloader(threading.Thread):
                             else:
                                 filename=prefix2 + p[2] + "_-_" + str(e) + "_" + video[2] + KA + video[1]
                             episode_list.append((video[0], filename, p[7], e, video[3]))
-                            ecount=ecount + 1
+                            ecount += 1
                             utils.log("Resolved [" + str(filename) + "]")
 
                             queue.put(video[0]) # append video url to queue
