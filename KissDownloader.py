@@ -209,11 +209,10 @@ class KissDownloader(threading.Thread):
                     if download_list[item]:
                         if sep == 0:
                             sep = 1
-                            utils.log("\u2500\u2500\u2500\u2500\u2500\u2500") # ------
+                            print("------")
                         print(download_list[item]) # output download progress
                     else:
                         utils.log('Download starting...')
-                    #print(str(item), ':', download_list[item])
                 time.sleep(4)
             download_prog=0
 
