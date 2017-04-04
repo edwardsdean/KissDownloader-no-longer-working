@@ -1,6 +1,8 @@
 # KissDownloader
 Downloads shows from Kissanime.ru, Kisscartoon.se, Kissasian.com
 
+Contact for support/troubleshooting https://discord.gg/W7uVTd7
+
 **Windows release**
 * Windows users can download the [Windows release](https://github.com/edwardsdean/KissDownloader/releases), which requires no setup.
 
