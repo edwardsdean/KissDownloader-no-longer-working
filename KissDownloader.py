@@ -20,13 +20,6 @@ from urllib.parse import urlparse
 
 from utils import *
 
-try:
-    pip.main(['install', '--upgrade', 'youtube_dl'])
-    import youtube_dl
-except:
-    pip.main(['install', 'youtube_dl'])
-    import youtube_dl # TODO
-
 if getattr(sys, 'frozen', False):
     utils.slog("Release: " +  platform.system() + " " + platform.release())
     dir_path = os.path.dirname(sys.executable)
@@ -44,6 +37,7 @@ if getattr(sys, 'frozen', False):
         sys.exit()
 
     import pySmartDL
+    import youtube_dl
     from bs4 import BeautifulSoup
     from selenium import webdriver
     from selenium.webdriver.chrome.options import Options
@@ -76,6 +70,13 @@ elif __file__:
 
     # install requires modules
     try:
+        pip.main(['install', '--upgrade', 'youtube_dl'])
+        import youtube_dl
+    except:
+        pip.main(['install', 'youtube_dl'])
+        import youtube_dl
+
+    try:
         pip.main(['install', '--upgrade', 'pySmartDL'])
         import pySmartDL
     except ImportError:
@@ -101,8 +102,6 @@ elif __file__:
         from selenium.webdriver.chrome.options import Options
         from selenium.common.exceptions import TimeoutException
         from selenium.webdriver.common.keys import Keys
-
-# TODO Beta logic
 
 utils.log("== Starting up ==")
 utils.slog("OS: " + platform.system() + " " + platform.release())
@@ -310,7 +309,6 @@ class KissDownloader(threading.Thread):
 				or self.get_episode_regex('', episode, '?id=', currentlink.lower()):
                 return [site + "" + currentlink.lower(), False]
 
-		# TODO revise to work with new logic
         for link in soup.findAll('a'): # experimental
             currentlink=link.get('href')
             if(currentlink is None):
