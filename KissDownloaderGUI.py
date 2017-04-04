@@ -16,11 +16,15 @@ import os
 import csv
 from collections import defaultdict
 
+queued = False
+
 try:
     from KissDownloader import *
 except Exception as e:
     utils.log(e)
     utils.log("=E Critical error KissDownloader.py")
+    os.system('pause')
+    sys.exit()
 
 class OneVoltTen(tk.Tk):
     def __init__(self, *args, **kwargs):
@@ -42,7 +46,7 @@ class OneVoltTen(tk.Tk):
 
     def show_frame(self, cont):
         if 'PageOne' in str(cont):
-            pass # TODO run readCSV function
+            queued = True
         frame = self.frames[cont]
         frame.tkraise()
 
@@ -119,13 +123,14 @@ class PageOne(tk.Frame):
         tk.Frame.__init__(self, parent)
         self.back = tk.Button(self, text="Back", command=self.btnRestart)
         self.back.pack()
-        self.readcsvbtn = tk.Button(self, text="Read queue", command=self.readCSV)
-        self.readcsvbtn.pack()
         self.controller=controller
         self.dir_path = dir_path=os.path.dirname(os.path.realpath(__file__))
+        while queued: # wait for frame change
+            pass
+        self.readCSV()
+
 
     def readCSV(self):
-        self.readcsvbtn.destroy()# destory read queue button
         valid = 0
         columns = defaultdict(list) # each value in each column is appended to a list
         with open('resolved.csv','r') as f:
