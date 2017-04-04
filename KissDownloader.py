@@ -155,6 +155,7 @@ class KissDownloader(threading.Thread):
                     #location=obj.get_dest()
                     try:
                         obj=pySmartDL.SmartDL(str(host).replace(" ","%20"), nestlist[0][2] + "temp/" + nestlist[0][1], progress_bar=False, fix_urls=True)
+                        obj.headers = nestlist[0][4]
                         obj.start(blocking=False)
                         while True:
                             if obj.isFinished():
@@ -342,8 +343,8 @@ class KissDownloader(threading.Thread):
         x=True
         while x:
             try:
-                page=self.driver.get(episode_page+"&s=kissanime") # prefer kissanime server
-                # print(page.text)
+                page=self.driver.get(episode_page) # prefer kissanime server
+                # page = self.driver.get("http://kissanime.ru/Anime/Little-Witch-Academia-TV/Episode-001?id=133445&s=beta")  # test beta server page
                 url=self.driver.current_url
                 if "Special/AreYouHuman?" in str(url):
                     utils.log("Captcha " + str(self.driver.current_url))
@@ -357,12 +358,13 @@ class KissDownloader(threading.Thread):
                 utils.slog(e)
                 utils.log("Timeout [" + str(episode_page) + "] Retrying...")
                 time.sleep(5)
-        # print(page.url)
         currentpage=self.driver.page_source
         soup=BeautifulSoup(currentpage, 'html.parser')
+        # print(currentpage)
 
-        time.sleep(1) # delay for page render
+        time.sleep(2) # delay for page render
 
+        #kissanime server (google)
         try:
             resolution=int(resolution)
         except Exception as e:
@@ -394,7 +396,15 @@ class KissDownloader(threading.Thread):
                     return [link.get('href'), ".mp4", resolutionr + "p"]
 
         # openload not supported
-        # beta not supported
+
+        # beta server
+        try:
+            link = soup.find('div', {'id': 'divContentVideo'}).find('video').get("src")
+            quality = soup.find('select', {'id': 'slcQualix'}).find('option',  {'selected': True}).text
+            header_for_download = {'Referer':self.driver.current_url}
+            return [link, ".mp4", quality, header_for_download]
+        except:
+            pass
 
         return ["false", "", ""]
 
@@ -506,6 +516,7 @@ class KissDownloader(threading.Thread):
                         pass
                     else:
                         video=self.get_video_src(page[0], p[10])
+                        #video = [URL, file_extension, video_res, url_header(for beta server)
                         KA=""
                         try:
                             if prefix:
@@ -533,7 +544,7 @@ class KissDownloader(threading.Thread):
                                 filename=prefix2 + p[2] + "_-_" + str(e) + "_" + video[2] + "_BD" + KA + video[1]
                             else:
                                 filename=prefix2 + p[2] + "_-_" + str(e) + "_" + video[2] + KA + video[1]
-                            episode_list.append((video[0], filename, p[7], e))
+                            episode_list.append((video[0], filename, p[7], e, video[3]))
                             ecount=ecount + 1
                             utils.log("Resolved [" + str(filename) + "]")
 
