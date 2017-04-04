@@ -8,6 +8,8 @@ Contact for support/troubleshooting https://discord.gg/W7uVTd7
 
 **Setup**
 
+* Install Chrome [Download Here](https://www.google.com/chrome/browser/desktop/)
+
 * Install Python 3 [Download Here](https://www.python.org/downloads/), Windows users be sure to tick 'Add Python to PATH' when installing.
 
 * Download and copy [ChromeDriver](https://sites.google.com/a/chromium.org/chromedriver/) to the script location
