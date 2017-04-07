@@ -398,18 +398,28 @@ class KissDownloader(threading.Thread):
 
         # openload
         for link in soup.find_all('iframe'):
-            if "openload" in link.get('src'):
-                utils.log(link.get('src'))
-                ydl=youtube_dl.YoutubeDL({'outtmpl': '%(id)s%(ext)s'})
-                result=ydl.extract_info(link.get('src'), download=False) # extract info
-                try:
+            try:
+                if "openload" in link.get('src'):
+                    utils.log(link.get('src'))
+                    ydl=youtube_dl.YoutubeDL({'outtmpl': '%(id)s%(ext)s'})
+                    print(333)
+                    result=ydl.extract_info(link.get('src'), download=False) # extract info
                     if "entries" in result:
                         video=result['entries'][0] # playlist
                     else:
                         video=result # single
-                except IndexError:
+                    return [video['url'].replace(" ", "%20"),  "."+video['ext'], "720p", ""]
+            except:
+                self.driver.get("https://openload.co/pair")
+                utils.log("=E Please solve captcha then click pair")
+                time.sleep(3)
+                input('Press enter to continue: ')
+                result=ydl.extract_info(link.get('src'), download=False) # extract info
+                if "entries" in result:
+                    video=result['entries'][0] # playlist
+                else:
                     video=result # single
-                return [video['url'],  "."+video['ext'], "720p", ""]
+                return [video['url'].replace(" ", "%20"),  "."+video['ext'], "720p", ""]
 
         # beta server
         try:
