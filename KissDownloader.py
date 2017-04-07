@@ -55,17 +55,12 @@ elif __file__:
 
     if platform.system() == "Windows":
         chromedriver = dir_path + "/chromedriver.exe"
-
-    if platform.system() == "Mac":
-        chromedriver = dir_path + "/chromedriver"
-
-    if platform.system() == "Linux":
-        chromedriver = dir_path + "/chromedriver"
-
-    chromedriver_path = Path(chromedriver)
-    if not chromedriver_path.is_file():
-        utils.log("=E Chromedriver not found http://chromedriver.storage.googleapis.com/index.html?path=2.9/")
-        sys.exit()
+        chromedriver_path = Path(chromedriver)
+        if not chromedriver_path.is_file():
+            utils.log("=E Chromedriver not found http://chromedriver.storage.googleapis.com/index.html?path=2.9/")
+            sys.exit()
+    else:
+        chromedriver = ""
     ublock_origin = dir_path + "/ublock_origin.crx"
 
     # install requires modules
@@ -497,7 +492,10 @@ class KissDownloader(threading.Thread):
             #prefs = {"profile.managed_default_content_settings.images":2}
             #extension.add_experimental_option("prefs",prefs)
 
-            self.driver=webdriver.Chrome(chromedriver, chrome_options=extension)
+            if platform.system() == "Mac" or platform.system() == "Linux":
+                self.driver=webdriver.Chrome(chrome_options=extension)
+            else:
+                self.driver=webdriver.Chrome(chromedriver, chrome_options=extension)
             self.driver.set_page_load_timeout(50)
             l = True
             while l:
