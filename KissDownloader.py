@@ -396,25 +396,30 @@ class KissDownloader(threading.Thread):
             try:
                 if "openload" in link.get('src'):
                     utils.log(link.get('src'))
-                    ydl=youtube_dl.YoutubeDL({'outtmpl': '%(id)s%(ext)s'})
-                    print(333)
-                    result=ydl.extract_info(link.get('src'), download=False) # extract info
-                    if "entries" in result:
-                        video=result['entries'][0] # playlist
-                    else:
-                        video=result # single
-                    return [video['url'].replace(" ", "%20"),  "."+video['ext'], "720p", ""]
+                    proper_link = link.get('src')
+                    if "openload" in proper_link:
+                        utils.log(proper_link)
+                        ydl=youtube_dl.YoutubeDL({'outtmpl': '%(id)s%(ext)s'})
+                        result=ydl.extract_info(str(proper_link), download=False) # extract info
+                        if "entries" in result:
+                            video=result['entries'][0] # playlist
+                        else:
+                            video=result # single
+                        if video['url'] and video['ext']:
+                            utils.slog(video['url'])
+                            return [video['url'],  "."+video['ext'], "720p", ""]
             except:
                 self.driver.get("https://openload.co/pair")
                 utils.log("=E Please solve captcha then click pair")
                 time.sleep(3)
                 input('Press enter to continue: ')
-                result=ydl.extract_info(link.get('src'), download=False) # extract info
+                result=ydl.extract_info(proper_link, download=False) # extract info
                 if "entries" in result:
                     video=result['entries'][0] # playlist
                 else:
                     video=result # single
-                return [video['url'].replace(" ", "%20"),  "."+video['ext'], "720p", ""]
+                if video['url'] and video['ext']:
+                    return [video['url'],  "."+video['ext'], "720p", ""]
 
         # beta server
         try:
