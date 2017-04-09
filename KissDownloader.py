@@ -536,7 +536,7 @@ class KissDownloader(threading.Thread):
 
             for e in self.frange(float(epcount), int(maxretrieve), 0.5):
                 if(int(ecount) < int(download_threads) * 3 and int(ecount) < int(maxretrieve)):
-                    time.sleep(2)
+                    time.sleep(8)
                     page=self.get_episode_page(e, p[8])
                     if page[0] == "":
                         print('Unable to find episode ' + str(e) + '...')
@@ -573,6 +573,7 @@ class KissDownloader(threading.Thread):
                                 filename=prefix2 + p[2] + "_-_" + str(e) + "_" + video[2] + KA + video[1]
                             episode_list.append((video[0], filename, p[7], e, video[3]))
                             ecount += 1
+                            print("Resolved [" + str(filename) + "]")
                             utils.log("Resolved [" + str(filename) + "]")
 
                             queue.put(video[0]) # append video url to queue
