@@ -13,10 +13,9 @@ from pathlib import Path
 import threading
 from threading import Thread, Lock
 import queue as Queue
-import urllib
-import urllib.request as urllib2
-from urllib.request import urlretrieve
 from urllib.parse import urlparse
+import urllib.request
+import shutil
 
 from utils import *
 
@@ -150,44 +149,52 @@ class KissDownloader(threading.Thread):
                     #urlretrieve(str(host).replace(" ","%20"), str(nestlist[0][2] + "temp/" + nestlist[0][1]))
                     #path=nestlist[0][2] + "temp/" + nestlist[0][1]
                     #location=obj.get_dest()
-                    try:
-                        obj=pySmartDL.SmartDL(str(host).replace(" ","%20"), nestlist[0][2] + "temp/" + nestlist[0][1], progress_bar=False, fix_urls=True)
-                        if nestlist[0][4]:
-                            obj.headers = nestlist[0][4]
-                        obj.start(blocking=False)
-                        while True:
+                    if "9xbuddy" in nestlist[0][0]:
+                        url = str(host).replace(" ","%20")
+                        file_name = nestlist[0][2] + nestlist[0][1]
+                        print("Downloading " + nestlist[0][1])
+                        with urllib.request.urlopen(url) as response, open(file_name, 'wb') as out_file:
+                            shutil.copyfileobj(response, out_file)
+                        print("Finished Downloading " + nestlist[0][1])
+                    else:
+                        try:
+                            obj=pySmartDL.SmartDL(str(host).replace(" ","%20"), nestlist[0][2] + "temp/" + nestlist[0][1], progress_bar=False, fix_urls=True)
+                            if nestlist[0][4]:
+                                obj.headers = nestlist[0][4]
+                            obj.start(blocking=False)
+                            while True:
+                                if obj.isFinished():
+                                    break
+                                progress = obj.get_progress() * 100
+                                if obj.get_eta() > 0 and (obj.get_progress() * 100) < 100:
+                                    console_output=str(nestlist[0][1] + "\t " + str(float("{0:.2f}".format((float(obj.get_progress())*100)))) + "% done at " + pySmartDL.utils.sizeof_human(obj.get_speed(human=False)) + "/s, ETA: "+ obj.get_eta(human=True))
+                                    try:
+                                        download_list[nestlist[0][3]]=console_output # update
+                                    except KeyError:
+                                        download_list[nestlist[0][3]].append(console_output) # initial
+                                    except Exception as e:
+                                        utils.slog(e)
+                                        utils.log("=E Download logic error")
+                                time.sleep(1)
+                                if progress == 100 and obj.get_eta() == 0:
+                                    time.sleep(1)
                             if obj.isFinished():
-                                break
-                            progress = obj.get_progress() * 100
-                            if obj.get_eta() > 0 and (obj.get_progress() * 100) < 100:
-                                console_output=str(nestlist[0][1] + "\t " + str(float("{0:.2f}".format((float(obj.get_progress())*100)))) + "% done at " + pySmartDL.utils.sizeof_human(obj.get_speed(human=False)) + "/s, ETA: "+ obj.get_eta(human=True))
                                 try:
-                                    download_list[nestlist[0][3]]=console_output # update
-                                except KeyError:
-                                    download_list[nestlist[0][3]].append(console_output) # initial
+                                    del download_list[nestlist[0][3]] # remove
                                 except Exception as e:
                                     utils.slog(e)
-                                    utils.log("=E Download logic error")
-                            time.sleep(1)
-                            if progress == 100 and obj.get_eta() == 0:
-                                time.sleep(1)
-                        if obj.isFinished():
-                            try:
-                                del download_list[nestlist[0][3]] # remove
-                            except Exception as e:
-                                utils.slog(e)
-                                utils.log("=E Unable to remove episode" + str(nestlist[0][3]))
-                            try:
-                                if os.path.isfile(nestlist[0][2] + "temp/" + nestlist[0][1]):
-                                    os.rename(nestlist[0][2] + "temp/" + nestlist[0][1], nestlist[0][2] + nestlist[0][1]) # move on download complete
-                                    utils.log("Completed " + str(episode))
-                                else:
-                                    utils.log("=E Failed " + str(episode))
-                            except Exception as e:
-                                utils.slog(e)
-                                utils.log("=E Failed moving " + str(nestlist[0][2] + "temp/" + nestlist[0][1]) + " to " + str(nestlist[0][2] + nestlist[0][1]))
-                    except socket.timeout as e:
-                        utils.log("=E Episode "+str(episode)+" timeout")
+                                    utils.log("=E Unable to remove episode" + str(nestlist[0][3]))
+                                try:
+                                    if os.path.isfile(nestlist[0][2] + "temp/" + nestlist[0][1]):
+                                        os.rename(nestlist[0][2] + "temp/" + nestlist[0][1], nestlist[0][2] + nestlist[0][1]) # move on download complete
+                                        utils.log("Completed " + str(episode))
+                                    else:
+                                        utils.log("=E Failed " + str(episode))
+                                except Exception as e:
+                                    utils.slog(e)
+                                    utils.log("=E Failed moving " + str(nestlist[0][2] + "temp/" + nestlist[0][1]) + " to " + str(nestlist[0][2] + nestlist[0][1]))
+                        except socket.timeout as e:
+                            utils.log("=E Episode "+str(episode)+" timeout")
                 count=count - 1
                 self.queue.task_done()
 
@@ -392,34 +399,54 @@ class KissDownloader(threading.Thread):
                     return [link.get('href'), ".mp4", resolutionr + "p", ""]
 
         # openload
-        for link in soup.find_all('iframe'):
-            try:
-                if "openload" in link.get('src'):
-                    utils.log(link.get('src'))
-                    proper_link = link.get('src')
-                    if "openload" in proper_link:
-                        utils.log(proper_link)
-                        ydl=youtube_dl.YoutubeDL({'outtmpl': '%(id)s%(ext)s'})
-                        result=ydl.extract_info(str(proper_link), download=False) # extract info
-                        if "entries" in result:
-                            video=result['entries'][0] # playlist
-                        else:
-                            video=result # single
-                        if video['url'] and video['ext']:
-                            utils.slog(video['url'])
-                            return [video['url'],  "."+video['ext'], "720p", ""]
-            except:
-                self.driver.get("https://openload.co/pair")
-                utils.log("=E Please solve captcha then click pair")
-                time.sleep(3)
-                input('Press enter to continue: ')
-                result=ydl.extract_info(proper_link, download=False) # extract info
-                if "entries" in result:
-                    video=result['entries'][0] # playlist
-                else:
-                    video=result # single
-                if video['url'] and video['ext']:
-                    return [video['url'],  "."+video['ext'], "720p", ""]
+        for link in soup.find_all('a', string="CLICK HERE TO DOWNLOAD"):
+            openload_link = link.get('href')
+            self.driver.get("https://9xbud.com/" + openload_link)
+            time.sleep(8)
+            currentpage = self.driver.page_source
+            openload_soup = BeautifulSoup(currentpage, 'html.parser')
+
+            video_url = openload_soup.find('a', text='Download Now').get('href')
+
+            #video format
+            result = openload_soup.find_all('li', {'class': 'link-list'})
+            soup2 = BeautifulSoup(str(result[1]), 'html.parser')
+            video_format = soup2.find('li', {'class': 'link-format'}).text
+
+            #headers
+            header_for_download = {'Referer': self.driver.current_url}
+
+            return [video_url, "." + str(video_format), "720p", header_for_download]
+
+
+        # for link in soup.find_all('iframe'):
+        #     try:
+        #         if "openload" in link.get('src'):
+        #             utils.log(link.get('src'))
+        #             proper_link = link.get('src')
+        #             if "openload" in proper_link:
+        #                 utils.log(proper_link)
+        #                 ydl=youtube_dl.YoutubeDL({'outtmpl': '%(id)s%(ext)s'})
+        #                 result=ydl.extract_info(str(proper_link), download=False) # extract info
+        #                 if "entries" in result:
+        #                     video=result['entries'][0] # playlist
+        #                 else:
+        #                     video=result # single
+        #                 if video['url'] and video['ext']:
+        #                     utils.slog(video['url'])
+        #                     return [video['url'],  "."+video['ext'], "720p", ""]
+        #     except:
+        #         self.driver.get("https://openload.co/pair")
+        #         utils.log("=E Please solve captcha then click pair")
+        #         time.sleep(3)
+        #         input('Press enter to continue: ')
+        #         result=ydl.extract_info(proper_link, download=False) # extract info
+        #         if "entries" in result:
+        #             video=result['entries'][0] # playlist
+        #         else:
+        #             video=result # single
+        #         if video['url'] and video['ext']:
+        #             return [video['url'],  "."+video['ext'], "720p", ""]
 
         # beta server
         try:
