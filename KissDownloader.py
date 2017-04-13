@@ -8,7 +8,6 @@ import glob
 import csv
 import re
 import socket
-import requests
 from pathlib import Path
 import threading
 from threading import Thread, Lock
@@ -18,6 +17,47 @@ import urllib.request
 import shutil
 
 from utils import *
+
+# install requires modules
+try:
+    pip.main(['install', '--upgrade', 'requests'])
+    import requests
+except:
+    pip.main(['install', 'requests'])
+    import requests
+try:
+    pip.main(['install', '--upgrade', 'youtube_dl'])
+    import youtube_dl
+except:
+    pip.main(['install', 'youtube_dl'])
+    import youtube_dl
+
+try:
+    pip.main(['install', '--upgrade', 'pySmartDL'])
+    import pySmartDL
+except ImportError:
+    pip.main(['install', 'pySmartDL'])
+    import pySmartDL
+
+try:
+    pip.main(['install', '--upgrade', 'BeautifulSoup4'])
+    from bs4 import BeautifulSoup
+except ImportError:
+    pip.main(['install', 'BeautifulSoup4'])
+    from bs4 import BeautifulSoup
+
+try:
+    pip.main(['install', '--upgrade', 'selenium'])
+    from selenium import webdriver
+    from selenium.webdriver.chrome.options import Options
+    from selenium.common.exceptions import TimeoutException
+    from selenium.webdriver.common.keys import Keys
+except ImportError:
+    pip.main(['install', 'selenium'])
+    from selenium import webdriver
+    from selenium.webdriver.chrome.options import Options
+    from selenium.common.exceptions import TimeoutException
+    from selenium.webdriver.common.keys import Keys
 
 if getattr(sys, 'frozen', False):
     utils.slog("Release: " +  platform.system() + " " + platform.release())
@@ -35,13 +75,6 @@ if getattr(sys, 'frozen', False):
         utils.log("=E ublock_origin.crx not found")
         sys.exit()
 
-    import pySmartDL
-    import youtube_dl
-    from bs4 import BeautifulSoup
-    from selenium import webdriver
-    from selenium.webdriver.chrome.options import Options
-    from selenium.common.exceptions import TimeoutException
-    from selenium.webdriver.common.keys import Keys
 
 elif __file__:
     utils.slog("Release: Python")
@@ -62,40 +95,7 @@ elif __file__:
         chromedriver = ""
     ublock_origin = dir_path + "/ublock_origin.crx"
 
-    # install requires modules
-    try:
-        pip.main(['install', '--upgrade', 'youtube_dl'])
-        import youtube_dl
-    except:
-        pip.main(['install', 'youtube_dl'])
-        import youtube_dl
 
-    try:
-        pip.main(['install', '--upgrade', 'pySmartDL'])
-        import pySmartDL
-    except ImportError:
-        pip.main(['install', 'pySmartDL'])
-        import pySmartDL
-
-    try:
-        pip.main(['install', '--upgrade', 'BeautifulSoup4'])
-        from bs4 import BeautifulSoup
-    except ImportError:
-        pip.main(['install', 'BeautifulSoup4'])
-        from bs4 import BeautifulSoup
-
-    try:
-        pip.main(['install', '--upgrade', 'selenium'])
-        from selenium import webdriver
-        from selenium.webdriver.chrome.options import Options
-        from selenium.common.exceptions import TimeoutException
-        from selenium.webdriver.common.keys import Keys
-    except ImportError:
-        pip.main(['install', 'selenium'])
-        from selenium import webdriver
-        from selenium.webdriver.chrome.options import Options
-        from selenium.common.exceptions import TimeoutException
-        from selenium.webdriver.common.keys import Keys
 
 utils.log("== Starting up ==")
 utils.slog("OS: " + platform.system() + " " + platform.release())
@@ -402,7 +402,8 @@ class KissDownloader(threading.Thread):
         for link in soup.find_all('a', string="CLICK HERE TO DOWNLOAD"):
             openload_link = link.get('href')
             self.driver.get("https://9xbud.com/" + openload_link)
-            time.sleep(8)
+            print("Page loading please wait")
+            time.sleep(15) #wait time for page to load
             currentpage = self.driver.page_source
             openload_soup = BeautifulSoup(currentpage, 'html.parser')
 
