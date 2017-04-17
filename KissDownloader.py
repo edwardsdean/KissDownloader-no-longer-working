@@ -263,6 +263,12 @@ class KissDownloader(threading.Thread):
         if '.5' in episode and '.5' in string:
             #print('decimal')
             regex = re.compile(keyword+'([0-9]*).5'+keyword2)
+        elif '.5' not in episode and 'a?' in string: # incomplete
+            #print('a?', string, episode, string)
+            regex = re.compile(keyword+'([0-9]*)a?'+keyword2)
+        elif '.5' in episode and 'b?' in string:
+            episode = episode.replace('.5', '')
+            regex = re.compile(keyword+'([0-9]*)b?'+keyword2)
         else:
             regex = re.compile(keyword+'([0-9]*)'+keyword2)
         try:
@@ -299,7 +305,7 @@ class KissDownloader(threading.Thread):
 				or self.get_episode_regex('uncen-episode-', episode, '', currentlink.lower()) \
 				or self.get_episode_regex('episode-', episode, '-uncensored?', currentlink.lower()) \
 				or self.get_episode_regex('episode-', episode, '-uncen?', currentlink.lower()) \
-				or self.get_episode_regex('', episode, '?', currentlink.lower()):
+				or self.get_episode_regex('', episode, '', currentlink.lower()):
                 return [site + "" + currentlink.lower(), True]
 
         for link in soup.findAll('a'): # censored
@@ -724,7 +730,7 @@ class KissDownloader(threading.Thread):
                         else:
                             episode_max=int(0)
                         if(int(row[6]) >= 0 and int(row[6]) <= 1080):
-                            if(int(row[6]) >= 360):
+                            if(int(row[6]) >= 360 and int(row[6]) != 1080):
                                 utils.log("Resolution limited to " + str(row[6]) + "p")
                             resolution=row[6]
                         else:
