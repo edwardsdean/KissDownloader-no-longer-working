@@ -267,7 +267,6 @@ class KissDownloader(threading.Thread):
             #print('a?', string, episode, string)
             regex = re.compile(keyword+'([0-9]*)a?'+keyword2)
         elif '.5' in episode and 'b?' in string:
-            episode = episode.replace('.5', '')
             regex = re.compile(keyword+'([0-9]*)b?'+keyword2)
         else:
             regex = re.compile(keyword+'([0-9]*)'+keyword2)
