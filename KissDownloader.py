@@ -152,9 +152,29 @@ class KissDownloader(threading.Thread):
                     if "9xbuddy" in nestlist[0][0]:
                         url = str(host).replace(" ","%20")
                         file_name = nestlist[0][2] + nestlist[0][1]
-                        print("Downloading " + nestlist[0][1])
-                        with urllib.request.urlopen(url) as response, open(file_name, 'wb') as out_file:
-                            shutil.copyfileobj(response, out_file)
+
+                        console_output = "Downloading " + nestlist[0][1]
+                        print(console_output)
+                        #add to download list
+                        try:
+                            download_list[nestlist[0][3]] = console_output  # update
+                        except KeyError:
+                            download_list[nestlist[0][3]].append(console_output)  # initial
+                        except Exception as e:
+                            utils.slog(e)
+                            utils.log("=E Download logic error")
+
+                        response = requests.get(url, stream=True)
+                        with open(file_name, 'wb') as out_file:
+                            shutil.copyfileobj(response.raw, out_file)
+                        del response
+
+                        #remove from download list
+                        try:
+                            del download_list[nestlist[0][3]]  # remove
+                        except Exception as e:
+                            utils.slog(e)
+                            utils.log("=E Unable to remove episode" + str(nestlist[0][3]))
                         print("Finished Downloading " + nestlist[0][1])
                     else:
                         try:
