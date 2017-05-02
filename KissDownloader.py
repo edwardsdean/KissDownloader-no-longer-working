@@ -368,24 +368,7 @@ class KissDownloader(threading.Thread):
         return ["", False]
 
     def get_video_src(self, episode_page, resolution): # parse url, return video url
-        x=True
-        while x:
-            try:
-                page=self.driver.get(episode_page) # prefer kissanime server
-                # page = self.driver.get("http://kissanime.ru/Anime/Little-Witch-Academia-TV/Episode-001?id=133445&s=beta")  # test beta server page
-                url=self.driver.current_url
-                if "Special/AreYouHuman?" in str(url):
-                    utils.log("Captcha " + str(self.driver.current_url))
-                    # webbrowser.open(self.driver.current_url)
-                    while("Special/AreYouHuman?" in str(self.driver.current_url)):
-                        time.sleep(1)
-                    #episode=episode - 1
-                else:
-                    x=False
-            except Exception as e:
-                utils.slog(e)
-                utils.log("Timeout [" + str(episode_page) + "] Retrying...")
-                time.sleep(5)
+        self.captch_check_plus_server_preference(episode_page, "&s=kissanime")
         currentpage=self.driver.page_source
         soup=BeautifulSoup(currentpage, 'html.parser')
         # print(currentpage)
@@ -424,66 +407,90 @@ class KissDownloader(threading.Thread):
                     return [link.get('href'), ".mp4", resolutionr + "p", ""]
 
         # openload
+        self.captch_check_plus_server_preference(episode_page, "&s=openload")
         for link in soup.find_all('a', string="CLICK HERE TO DOWNLOAD"):
             openload_link = link.get('href')
-            self.driver.get("https://9xbud.com/" + openload_link)
-            print("Page loading please wait")
-            time.sleep(15) #wait time for page to load
-            currentpage = self.driver.page_source
-            openload_soup = BeautifulSoup(currentpage, 'html.parser')
+            try:
+                video_src = self.resolve_url_9xbuddy(openload_link)
+                video_url = video_src[0]
+                video_format = video_src[1]
 
-            video_url = openload_soup.find('a', text='Download Now').get('href')
+                #headers
+                header_for_download = {'Referer': self.driver.current_url}
 
-            #video format
-            result = openload_soup.find_all('li', {'class': 'link-list'})
-            soup2 = BeautifulSoup(str(result[1]), 'html.parser')
-            video_format = soup2.find('li', {'class': 'link-format'}).text
+                return [video_url, "." + video_format, "720p", header_for_download]
+            except:
+                pass
 
-            #headers
-            header_for_download = {'Referer': self.driver.current_url}
-
-            return [video_url, "." + str(video_format), "720p", header_for_download]
-
-
-        # for link in soup.find_all('iframe'):
-        #     try:
-        #         if "openload" in link.get('src'):
-        #             utils.log(link.get('src'))
-        #             proper_link = link.get('src')
-        #             if "openload" in proper_link:
-        #                 utils.log(proper_link)
-        #                 ydl=youtube_dl.YoutubeDL({'outtmpl': '%(id)s%(ext)s'})
-        #                 result=ydl.extract_info(str(proper_link), download=False) # extract info
-        #                 if "entries" in result:
-        #                     video=result['entries'][0] # playlist
-        #                 else:
-        #                     video=result # single
-        #                 if video['url'] and video['ext']:
-        #                     utils.slog(video['url'])
-        #                     return [video['url'],  "."+video['ext'], "720p", ""]
-        #     except:
-        #         self.driver.get("https://openload.co/pair")
-        #         utils.log("=E Please solve captcha then click pair")
-        #         time.sleep(3)
-        #         input('Press enter to continue: ')
-        #         result=ydl.extract_info(proper_link, download=False) # extract info
-        #         if "entries" in result:
-        #             video=result['entries'][0] # playlist
-        #         else:
-        #             video=result # single
-        #         if video['url'] and video['ext']:
-        #             return [video['url'],  "."+video['ext'], "720p", ""]
-
-        # beta server
+        #beta server
         try:
+            self.captch_check_plus_server_preference(episode_page, "&s=beta")
             link = soup.find('div', {'id': 'divContentVideo'}).find('video').get("src")
             quality = soup.find('select', {'id': 'slcQualix'}).find('option',  {'selected': True}).text
             header_for_download = {'Referer':self.driver.current_url}
-            return [link, ".mp4", quality, header_for_download]
+
+            print("beta", link, quality)
+
+            video_url = link
+            video_format = ".mp4"
+
+            return [video_url, video_format, quality, header_for_download]
         except:
             pass
 
+        # rapidvideo /
+        try:
+            self.captch_check_plus_server_preference(episode_page, "&s=rapidvideo")
+            link = soup.find('div', {'id': 'divContentVideo'}).find('iframe').get("src")
+            header_for_download = {'Referer': self.driver.current_url}
+            print("rapidvid", link)
+            if "rapidvideo" in link:
+                video_src = self.resolve_url_9xbuddy(link)
+
+                video_url = video_src[0]
+                video_format = video_url[1]
+
+                return [video_url, video_format, quality, header_for_download]
+        except e:
+            print(e)
+
         return ["false", "", "", ""]
+
+    def resolve_url_9xbuddy(self, url):
+
+        self.driver.get("https://9xbud.com/" + url)
+        print("Page loading please wait")
+        time.sleep(15)  # wait time for page to load
+        currentpage = self.driver.page_source
+        openload_soup = BeautifulSoup(currentpage, 'html.parser')
+
+        video_url = openload_soup.find('a', text='Download Now').get('href')
+
+        # video format
+        result = openload_soup.find_all('li', {'class': 'link-list'})
+        soup2 = BeautifulSoup(str(result[1]), 'html.parser')
+        video_format = soup2.find('li', {'class': 'link-format'}).text
+
+        return [video_url, video_format]
+
+    def captch_check_plus_server_preference(self, episode_page, server_preference):
+        x = True
+        while x:
+            try:
+                page = self.driver.get(episode_page + server_preference)
+                url = self.driver.current_url
+                if "Special/AreYouHuman?" in str(url):
+                    utils.log("Captcha " + str(self.driver.current_url))
+                    # webbrowser.open(self.driver.current_url)
+                    while ("Special/AreYouHuman?" in str(self.driver.current_url)):
+                        time.sleep(1)
+                        # episode=episode - 1
+                else:
+                    x = False
+            except Exception as e:
+                utils.slog(e)
+                utils.log("Timeout [" + str(episode_page) + "] Retrying...")
+                time.sleep(5)
 
     def frange(self, start, stop, step):
         try:
