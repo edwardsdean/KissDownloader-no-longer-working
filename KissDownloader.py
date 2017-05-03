@@ -408,23 +408,30 @@ class KissDownloader(threading.Thread):
 
         # openload
         self.captch_check_plus_server_preference(episode_page, "&s=openload")
+        currentpage = self.driver.page_source
+        soup = BeautifulSoup(currentpage, 'html.parser')
+        time.sleep(2)  # delay for page render
         for link in soup.find_all('a', string="CLICK HERE TO DOWNLOAD"):
             openload_link = link.get('href')
             try:
                 video_src = self.resolve_url_9xbuddy(openload_link)
                 video_url = video_src[0]
                 video_format = video_src[1]
+                quality = ""
 
                 #headers
                 header_for_download = {'Referer': self.driver.current_url}
 
-                return [video_url, "." + video_format, "720p", header_for_download]
+                return [video_url, "." + video_format, quality, header_for_download]
             except:
                 pass
 
         #beta server
         try:
             self.captch_check_plus_server_preference(episode_page, "&s=beta")
+            currentpage = self.driver.page_source
+            soup = BeautifulSoup(currentpage, 'html.parser')
+            time.sleep(2)  # delay for page render
             link = soup.find('div', {'id': 'divContentVideo'}).find('video').get("src")
             quality = soup.find('select', {'id': 'slcQualix'}).find('option',  {'selected': True}).text
             header_for_download = {'Referer':self.driver.current_url}
@@ -438,20 +445,24 @@ class KissDownloader(threading.Thread):
         except:
             pass
 
-        # rapidvideo /
+        # rapidvideo
         try:
             self.captch_check_plus_server_preference(episode_page, "&s=rapidvideo")
+            currentpage = self.driver.page_source
+            soup = BeautifulSoup(currentpage, 'html.parser')
+            time.sleep(2)  # delay for page render
+            # link = soup.find('div', {'id': 'divContentVideo'}).find('iframe').get("src")
             link = soup.find('div', {'id': 'divContentVideo'}).find('iframe').get("src")
             header_for_download = {'Referer': self.driver.current_url}
-            print("rapidvid", link)
-            if "rapidvideo" in link:
-                video_src = self.resolve_url_9xbuddy(link)
 
-                video_url = video_src[0]
-                video_format = video_url[1]
+            video_src = self.resolve_url_9xbuddy(link)
 
-                return [video_url, video_format, quality, header_for_download]
-        except e:
+            quality = ""
+            video_url = video_src[0]
+            video_format = video_src[1]
+
+            return [video_url, video_format, quality, header_for_download]
+        except Exception as e:
             print(e)
 
         return ["false", "", "", ""]
