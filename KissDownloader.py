@@ -283,19 +283,17 @@ class KissDownloader(threading.Thread):
         if '.5' in episode and '.5' in string:
             #print('decimal')
             regex = re.compile(keyword+'([0-9]*).5'+keyword2)
-        elif '.5' not in episode and 'a?' in string: # incomplete
-            #print('a?', string, episode, string)
-            regex = re.compile(keyword+'([0-9]*)a?'+keyword2)
-        elif '.5' in episode and 'b?' in string:
-            regex = re.compile(keyword+'([0-9]*)b?'+keyword2)
+        elif '.5' not in episode and 'a?id=' in string: # incomplete
+            print('a?', string, episode, string)
+            regex = re.compile(keyword+'([0-9]*)a'+keyword2)
+        elif '.5' in episode and 'b?id=' in string:
+            regex = re.compile(keyword+'([0-9]*)b'+keyword2)
         else:
             regex = re.compile(keyword+'([0-9]*)'+keyword2)
         try:
             if float(episode) == float(regex.findall(string)[0]):
-                if '.5' in episode and '.5' in string \
-					or '.5' not in episode and '.5' not in string:
-                    utils.log('Found ['+str(keyword)+str(episode)+str(keyword2)+'] in ['+str(string)+']')
-                    return regex.findall(string)[0]
+                utils.log('Found ['+str(keyword)+str(episode)+str(keyword2)+'] in ['+str(string)+']')
+                return regex.findall(string)[0]
                 #else:
                 #    print('Not2',episode,regex.findall(string)[0])
             #else:
