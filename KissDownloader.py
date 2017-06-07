@@ -488,10 +488,10 @@ class KissDownloader(threading.Thread):
             try:
                 page = self.driver.get(episode_page + server_preference)
                 url = self.driver.current_url
-                if "Special/AreYouHuman?" in str(url):
+                if "Special/AreYouHuman" in str(url):
                     utils.log("Captcha " + str(self.driver.current_url))
                     # webbrowser.open(self.driver.current_url)
-                    while ("Special/AreYouHuman?" in str(self.driver.current_url)):
+                    while ("Special/AreYouHuman" in str(self.driver.current_url)):
                         time.sleep(1)
                         # episode=episode - 1
                 else:
