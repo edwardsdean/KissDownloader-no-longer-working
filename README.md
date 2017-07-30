@@ -1,5 +1,7 @@
 # KissDownloader
-Downloads shows from Kissanime.ru, Kimcartoon.me, Kissasian.com
+Downloads shows from Kimcartoon.me, Kissasian.com
+
+* Kissanime.ru is only partially supported due to its captchas.
 
 Contact for support/troubleshooting https://discord.gg/W7uVTd7
 
@@ -15,4 +17,4 @@ Contact for support/troubleshooting https://discord.gg/W7uVTd7
 
 Installation is now done, to use the script run KissDownloaderGUI.py
 
-The python script should work all all major platforms.
+The python script should work for all major platforms.
