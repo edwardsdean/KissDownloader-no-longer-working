@@ -1,2 +1,2 @@
 chmod +x KissDownloaderGUI.py  KissDownloader.py
-python -m KissDownloaderGUI
+python -m KissDownloaderGUI.py
