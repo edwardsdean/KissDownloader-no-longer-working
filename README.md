@@ -13,7 +13,8 @@ Contact for support/troubleshooting https://discord.gg/W7uVTd7
 
 * Download and copy [ChromeDriver](https://sites.google.com/a/chromium.org/chromedriver/) to the script location
 
-* When first running you may need to be run with admin/root privileges to install the required modules
+* When first running you may need to be run with admin/root privileges to install the required modules (linux users can run 
+  "sh install.sh" in any terminal you prefer,to run the script for the first time)
 
 Installation is now done, to use the script run KissDownloaderGUI.py
 
